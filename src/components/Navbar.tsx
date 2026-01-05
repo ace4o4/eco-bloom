@@ -10,8 +10,8 @@ const Navbar = () => {
 
   const navLinks = [
     { name: "How It Works", href: "/#how-it-works" },
-    { name: "Impact", href: "/#impact" },
-    { name: "Community", href: "/#community" },
+    { name: "Eco Map", href: "/eco-map" },
+    { name: "Leaderboard", href: "/leaderboard" },
     { name: "Scorecard", href: "/scorecard" },
   ];
 
