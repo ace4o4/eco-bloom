@@ -2,15 +2,17 @@ import { motion } from "framer-motion";
 import { Leaf, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
+import { Link, useLocation } from "react-router-dom";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const location = useLocation();
 
   const navLinks = [
-    { name: "How It Works", href: "#how-it-works" },
-    { name: "Impact", href: "#impact" },
-    { name: "Community", href: "#community" },
-    { name: "About", href: "#about" },
+    { name: "How It Works", href: "/#how-it-works" },
+    { name: "Impact", href: "/#impact" },
+    { name: "Community", href: "/#community" },
+    { name: "Scorecard", href: "/scorecard" },
   ];
 
   return (
@@ -23,29 +25,31 @@ const Navbar = () => {
       <div className="max-w-7xl mx-auto">
         <div className="glass-panel px-6 py-3 flex items-center justify-between">
           {/* Logo */}
-          <a href="#" className="flex items-center gap-2 group">
+          <Link to="/" className="flex items-center gap-2 group">
             <motion.div
               whileHover={{ rotate: 20 }}
               transition={{ type: "spring", stiffness: 300 }}
-              className="w-10 h-10 rounded-full bg-primary flex items-center justify-center"
+              className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center shadow-neon"
             >
-              <Leaf className="w-5 h-5 text-primary-foreground" />
+              <Leaf className="w-5 h-5 text-white" />
             </motion.div>
-            <span className="font-montserrat font-bold text-xl text-primary">
+            <span className="font-montserrat font-bold text-xl text-gradient-eco">
               Eco-Sync
             </span>
-          </a>
+          </Link>
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-8">
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.name}
-                href={link.href}
-                className="story-link text-foreground/80 hover:text-primary transition-colors font-medium"
+                to={link.href}
+                className={`story-link text-foreground/80 hover:text-primary transition-colors font-medium ${
+                  location.pathname === link.href ? "text-primary" : ""
+                }`}
               >
                 {link.name}
-              </a>
+              </Link>
             ))}
           </div>
 
@@ -54,9 +58,11 @@ const Navbar = () => {
             <Button variant="ghost" size="sm">
               Sign In
             </Button>
-            <Button variant="eco" size="sm">
-              Plant a Match
-            </Button>
+            <Link to="/plant-match">
+              <Button variant="eco" size="sm">
+                Plant a Match
+              </Button>
+            </Link>
           </div>
 
           {/* Mobile Menu Button */}
@@ -77,22 +83,24 @@ const Navbar = () => {
             className="md:hidden mt-2 glass-panel p-4 space-y-4"
           >
             {navLinks.map((link) => (
-              <a
+              <Link
                 key={link.name}
-                href={link.href}
+                to={link.href}
                 className="block py-2 text-foreground/80 hover:text-primary transition-colors font-medium"
                 onClick={() => setIsOpen(false)}
               >
                 {link.name}
-              </a>
+              </Link>
             ))}
             <div className="pt-4 border-t border-border space-y-2">
               <Button variant="ghost" className="w-full justify-center">
                 Sign In
               </Button>
-              <Button variant="eco" className="w-full justify-center">
-                Plant a Match
-              </Button>
+              <Link to="/plant-match" className="block">
+                <Button variant="eco" className="w-full justify-center">
+                  Plant a Match
+                </Button>
+              </Link>
             </div>
           </motion.div>
         )}
