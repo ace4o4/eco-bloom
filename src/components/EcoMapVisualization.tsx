@@ -54,7 +54,7 @@ const EcoMapVisualization = () => {
         >
           <span className="eco-badge mb-4">Living Ecosystem</span>
           <h2 className="text-3xl md:text-5xl font-bold text-foreground mt-4 mb-4">
-            Your City, Connected
+            Your City, <span className="text-gradient-eco">Connected</span>
           </h2>
           <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
             Watch resources flow through our network. Every glowing connection represents 
@@ -69,7 +69,7 @@ const EcoMapVisualization = () => {
         >
           {/* Background Grid Pattern */}
           <div 
-            className="absolute inset-0 opacity-10"
+            className="absolute inset-0 opacity-20"
             style={{
               backgroundImage: `
                 linear-gradient(to right, hsl(var(--primary) / 0.3) 1px, transparent 1px),
@@ -83,9 +83,9 @@ const EcoMapVisualization = () => {
           <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
             <defs>
               <linearGradient id="connectionGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.2" />
-                <stop offset="50%" stopColor="hsl(var(--secondary))" stopOpacity="0.8" />
-                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.2" />
+                <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.3" />
+                <stop offset="50%" stopColor="hsl(var(--secondary))" stopOpacity="1" />
+                <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity="0.3" />
               </linearGradient>
             </defs>
             
@@ -136,7 +136,7 @@ const EcoMapVisualization = () => {
                 {/* Pulse Ring */}
                 {node.active && (
                   <motion.div
-                    className="absolute inset-0 -m-2 rounded-full bg-secondary/30"
+                    className="absolute inset-0 -m-2 rounded-full bg-secondary/40"
                     animate={{ scale: [1, 1.5, 1], opacity: [0.5, 0, 0.5] }}
                     transition={{ duration: 2, repeat: Infinity, delay: index * 0.3 }}
                   />
@@ -146,7 +146,7 @@ const EcoMapVisualization = () => {
                 <div className={`
                   w-12 h-12 rounded-full flex items-center justify-center
                   ${node.active 
-                    ? "bg-primary text-primary-foreground shadow-eco-glow" 
+                    ? "bg-gradient-to-br from-primary to-secondary text-white shadow-neon" 
                     : "bg-muted text-muted-foreground"
                   }
                   transition-all duration-300 group-hover:scale-110
@@ -158,7 +158,7 @@ const EcoMapVisualization = () => {
                 <div className="
                   absolute bottom-full left-1/2 -translate-x-1/2 mb-3
                   opacity-0 group-hover:opacity-100 transition-opacity
-                  pointer-events-none
+                  pointer-events-none z-10
                 ">
                   <div className="glass-card px-3 py-2 text-center whitespace-nowrap">
                     <div className="font-semibold text-sm">{node.name}</div>
@@ -175,7 +175,7 @@ const EcoMapVisualization = () => {
           <div className="absolute bottom-4 left-4 glass-card px-4 py-3">
             <div className="flex items-center gap-4 text-xs">
               <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-primary animate-pulse-glow" />
+                <div className="w-3 h-3 rounded-full bg-gradient-to-r from-primary to-secondary animate-pulse-glow" />
                 <span className="text-muted-foreground">Active Match</span>
               </div>
               <div className="flex items-center gap-2">
@@ -189,9 +189,9 @@ const EcoMapVisualization = () => {
         {/* Info Cards */}
         <div className="grid md:grid-cols-3 gap-6 mt-12 max-w-4xl mx-auto">
           {[
-            { title: "Real-Time Matching", desc: "AI-powered connections updated every minute" },
-            { title: "Carbon-Optimized", desc: "Routes calculated for minimal environmental impact" },
-            { title: "Full Transparency", desc: "Track every gram from source to destination" },
+            { title: "Real-Time Matching", desc: "AI-powered connections updated every minute", color: "from-primary to-secondary" },
+            { title: "Carbon-Optimized", desc: "Routes calculated for minimal environmental impact", color: "from-info to-sky" },
+            { title: "Full Transparency", desc: "Track every gram from source to destination", color: "from-accent to-golden" },
           ].map((item, index) => (
             <motion.div
               key={item.title}
@@ -199,8 +199,9 @@ const EcoMapVisualization = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
-              className="glass-card p-5 text-center"
+              className="glass-card p-5 text-center group hover:shadow-neon transition-all duration-300"
             >
+              <div className={`w-2 h-2 rounded-full bg-gradient-to-r ${item.color} mx-auto mb-3`} />
               <h3 className="font-semibold text-foreground mb-2">{item.title}</h3>
               <p className="text-sm text-muted-foreground">{item.desc}</p>
             </motion.div>

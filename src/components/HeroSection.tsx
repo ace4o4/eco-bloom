@@ -1,36 +1,42 @@
 import { motion } from "framer-motion";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import heroBg from "@/assets/hero-bg.jpg";
 
 const HeroSection = () => {
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-24 pb-16 px-4">
-      {/* Background Image */}
+      {/* Background Image with Dark Overlay */}
       <div className="absolute inset-0 z-0">
         <img
           src={heroBg}
           alt="Solarpunk city"
-          className="w-full h-full object-cover"
+          className="w-full h-full object-cover opacity-40"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-background/80 via-background/40 to-background" />
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-background/80 to-background" />
       </div>
 
-      {/* Floating Elements */}
+      {/* Floating Elements - More Colorful */}
       <motion.div
-        className="absolute top-1/4 left-[10%] w-20 h-20 rounded-full bg-secondary/30 blur-2xl"
+        className="absolute top-1/4 left-[10%] w-32 h-32 rounded-full bg-gradient-to-br from-primary/40 to-secondary/40 blur-3xl"
         animate={{ y: [0, -20, 0], scale: [1, 1.1, 1] }}
         transition={{ duration: 6, repeat: Infinity, ease: "easeInOut" }}
       />
       <motion.div
-        className="absolute bottom-1/3 right-[15%] w-32 h-32 rounded-full bg-golden/40 blur-3xl"
+        className="absolute bottom-1/3 right-[15%] w-40 h-40 rounded-full bg-gradient-to-br from-accent/40 to-golden/40 blur-3xl"
         animate={{ y: [0, 20, 0], scale: [1, 1.15, 1] }}
         transition={{ duration: 8, repeat: Infinity, ease: "easeInOut", delay: 1 }}
       />
       <motion.div
-        className="absolute top-1/2 right-[30%] w-16 h-16 rounded-full bg-sky/50 blur-2xl"
+        className="absolute top-1/2 right-[30%] w-24 h-24 rounded-full bg-gradient-to-br from-violet/40 to-magenta/40 blur-2xl"
         animate={{ y: [0, -15, 0] }}
         transition={{ duration: 5, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+      />
+      <motion.div
+        className="absolute top-1/3 left-[40%] w-20 h-20 rounded-full bg-gradient-to-br from-info/30 to-electric/30 blur-2xl"
+        animate={{ x: [0, 15, 0], y: [0, -10, 0] }}
+        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut", delay: 0.5 }}
       />
 
       {/* Content */}
@@ -75,13 +81,17 @@ const HeroSection = () => {
           transition={{ duration: 0.7, delay: 0.3 }}
           className="flex flex-col sm:flex-row gap-4 justify-center items-center"
         >
-          <Button variant="hero" size="xl" className="group">
-            Plant Your First Match
-            <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-          </Button>
-          <Button variant="hero-outline" size="xl">
-            Watch the Forest Grow
-          </Button>
+          <Link to="/plant-match">
+            <Button variant="hero" size="xl" className="group">
+              Plant Your First Match
+              <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+            </Button>
+          </Link>
+          <Link to="/scorecard">
+            <Button variant="hero-outline" size="xl">
+              Watch the Forest Grow
+            </Button>
+          </Link>
         </motion.div>
 
         {/* Stats Preview */}
@@ -92,18 +102,18 @@ const HeroSection = () => {
           className="mt-16 grid grid-cols-3 gap-6 max-w-2xl mx-auto"
         >
           {[
-            { value: "12.8", unit: "tons", label: "Materials Diverted" },
-            { value: "8.4", unit: "tons", label: "CO₂ Prevented" },
-            { value: "1,247", unit: "", label: "Trees Saved" },
+            { value: "12.8", unit: "tons", label: "Materials Diverted", color: "from-primary to-secondary" },
+            { value: "8.4", unit: "tons", label: "CO₂ Prevented", color: "from-info to-sky" },
+            { value: "1,247", unit: "", label: "Trees Saved", color: "from-accent to-golden" },
           ].map((stat, index) => (
             <motion.div
               key={stat.label}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ delay: 0.6 + index * 0.1 }}
-              className="glass-card p-4 text-center"
+              className="glass-card p-4 text-center group hover:shadow-neon transition-all duration-300"
             >
-              <div className="text-2xl md:text-3xl font-bold text-primary">
+              <div className={`text-2xl md:text-3xl font-bold bg-gradient-to-r ${stat.color} bg-clip-text text-transparent`}>
                 {stat.value}
                 <span className="text-sm font-normal text-muted-foreground ml-1">
                   {stat.unit}
