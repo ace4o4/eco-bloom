@@ -85,11 +85,11 @@ const Leaderboard = () => {
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      
+
       <main className="pt-24 pb-16">
         <div className="container mx-auto px-4">
           {/* Header */}
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-12"
@@ -131,7 +131,7 @@ const Leaderboard = () => {
                     key={filter}
                     variant={timeFilter === filter ? 'eco' : 'glass'}
                     size="sm"
-                    onClick={() => setTimeFilter(filter as any)}
+                    onClick={() => setTimeFilter(filter as 'week' | 'month' | 'all')}
                   >
                     {filter === 'week' ? 'This Week' : filter === 'month' ? 'This Month' : 'All Time'}
                   </Button>
@@ -139,7 +139,7 @@ const Leaderboard = () => {
               </div>
 
               {/* Top 3 Podium */}
-              <motion.div 
+              <motion.div
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
@@ -198,7 +198,7 @@ const Leaderboard = () => {
               </motion.div>
 
               {/* Full Leaderboard */}
-              <motion.div 
+              <motion.div
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
@@ -240,7 +240,7 @@ const Leaderboard = () => {
 
             {/* Challenges Tab */}
             <TabsContent value="challenges">
-              <motion.div 
+              <motion.div
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
@@ -267,7 +267,7 @@ const Leaderboard = () => {
                             {challenge.daysLeft} days left
                           </Badge>
                         </div>
-                        
+
                         <div className="mt-4">
                           <div className="flex justify-between text-sm mb-2">
                             <span className="text-muted-foreground">{challenge.progress.toLocaleString()} / {challenge.target.toLocaleString()} {challenge.unit}</span>
@@ -308,7 +308,7 @@ const Leaderboard = () => {
 
             {/* Community Goals Tab */}
             <TabsContent value="goals">
-              <motion.div 
+              <motion.div
                 variants={containerVariants}
                 initial="hidden"
                 animate="visible"
@@ -337,7 +337,7 @@ const Leaderboard = () => {
                         <p className="text-muted-foreground">of {goal.target.toLocaleString()} {goal.unit}</p>
                       </div>
                     </div>
-                    
+
                     <div className="relative">
                       <div className="h-6 bg-white/10 rounded-full overflow-hidden">
                         <motion.div
@@ -349,7 +349,7 @@ const Leaderboard = () => {
                           <div className="absolute inset-0 bg-[linear-gradient(90deg,transparent_0%,rgba(255,255,255,0.3)_50%,transparent_100%)] animate-shimmer" />
                         </motion.div>
                       </div>
-                      
+
                       {/* Milestone markers */}
                       <div className="absolute top-0 left-0 right-0 h-6 flex items-center">
                         {[25, 50, 75].map(percent => (
@@ -370,7 +370,7 @@ const Leaderboard = () => {
                 ))}
 
                 {/* Call to Action */}
-                <motion.div 
+                <motion.div
                   variants={itemVariants}
                   className="text-center glass-card-dark p-8 bg-gradient-to-br from-eco-green/10 to-eco-lime/10 border-eco-green/20"
                 >
