@@ -1,11 +1,15 @@
 import { motion } from "framer-motion";
-import { Leaf, Menu, X } from "lucide-react";
+import { Leaf, Menu, X, LogOut, User as UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
+import AuthModal from "@/components/AuthModal";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const { user, signOut } = useAuth();
   const location = useLocation();
 
   const navLinks = [
@@ -44,9 +48,8 @@ const Navbar = () => {
               <Link
                 key={link.name}
                 to={link.href}
-                className={`story-link text-foreground/80 hover:text-primary transition-colors font-medium ${
-                  location.pathname === link.href ? "text-primary" : ""
-                }`}
+                className={`story-link text-foreground/80 hover:text-primary transition-colors font-medium ${location.pathname === link.href ? "text-primary" : ""
+                  }`}
               >
                 {link.name}
               </Link>
@@ -55,14 +58,48 @@ const Navbar = () => {
 
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center gap-3">
-            <Button variant="ghost" size="sm">
-              Sign In
-            </Button>
-            <Link to="/plant-match">
-              <Button variant="eco" size="sm">
+            {user ? (
+              <>
+                <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-primary/10 border border-primary/20">
+                  <UserIcon size={16} className="text-primary" />
+                  <span className="text-sm font-medium text-foreground">
+                    {user.user_metadata?.full_name || user.email}
+                  </span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => signOut()}
+                  className="gap-2"
+                >
+                  <LogOut size={16} />
+                  Sign Out
+                </Button>
+              </>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsAuthModalOpen(true)}
+              >
+                Sign In
+              </Button>
+            )}
+            {user ? (
+              <Link to="/dashboard">
+                <Button variant="eco" size="sm">
+                  Dashboard
+                </Button>
+              </Link>
+            ) : (
+              <Button
+                variant="eco"
+                size="sm"
+                onClick={() => setIsAuthModalOpen(true)}
+              >
                 Plant a Match
               </Button>
-            </Link>
+            )}
           </div>
 
           {/* Mobile Menu Button */}
@@ -93,18 +130,66 @@ const Navbar = () => {
               </Link>
             ))}
             <div className="pt-4 border-t border-border space-y-2">
-              <Button variant="ghost" className="w-full justify-center">
-                Sign In
-              </Button>
-              <Link to="/plant-match" className="block">
-                <Button variant="eco" className="w-full justify-center">
+              {user ? (
+                <>
+                  <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-primary/10 border border-primary/20">
+                    <UserIcon size={16} className="text-primary" />
+                    <span className="text-sm font-medium text-foreground">
+                      {user.user_metadata?.full_name || user.email}
+                    </span>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    className="w-full justify-center gap-2"
+                    onClick={() => {
+                      signOut();
+                      setIsOpen(false);
+                    }}
+                  >
+                    <LogOut size={16} />
+                    Sign Out
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  variant="ghost"
+                  className="w-full justify-center"
+                  onClick={() => {
+                    setIsAuthModalOpen(true);
+                    setIsOpen(false);
+                  }}
+                >
+                  Sign In
+                </Button>
+              )}
+              {user ? (
+                <Link to="/dashboard" className="block">
+                  <Button variant="eco" className="w-full justify-center">
+                    Dashboard
+                  </Button>
+                </Link>
+              ) : (
+                <Button
+                  variant="eco"
+                  className="w-full justify-center"
+                  onClick={() => {
+                    setIsAuthModalOpen(true);
+                    setIsOpen(false);
+                  }}
+                >
                   Plant a Match
                 </Button>
-              </Link>
+              )}
             </div>
           </motion.div>
         )}
       </div>
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+      />
     </motion.nav>
   );
 };
