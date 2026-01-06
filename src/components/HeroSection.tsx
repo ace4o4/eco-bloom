@@ -2,9 +2,15 @@ import { motion } from "framer-motion";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
+import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import AuthModal from "@/components/AuthModal";
 import heroBg from "@/assets/hero-bg.jpg";
 
 const HeroSection = () => {
+  const { user } = useAuth();
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-24 pb-16 px-4">
       {/* Background Image with Dark Overlay */}
@@ -70,7 +76,7 @@ const HeroSection = () => {
           transition={{ duration: 0.7, delay: 0.2 }}
           className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed"
         >
-          Transform waste streams into resource rivers. Connect your business to a 
+          Transform waste streams into resource rivers. Connect your business to a
           living ecosystem that makes sustainability effortless, measurable, and joyful.
         </motion.p>
 
@@ -81,12 +87,24 @@ const HeroSection = () => {
           transition={{ duration: 0.7, delay: 0.3 }}
           className="flex flex-col sm:flex-row gap-4 justify-center items-center"
         >
-          <Link to="/plant-match">
-            <Button variant="hero" size="xl" className="group">
+          {user ? (
+            <Link to="/dashboard">
+              <Button variant="hero" size="xl" className="group">
+                Go to Dashboard
+                <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+              </Button>
+            </Link>
+          ) : (
+            <Button
+              variant="hero"
+              size="xl"
+              className="group"
+              onClick={() => setIsAuthModalOpen(true)}
+            >
               Plant Your First Match
               <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
             </Button>
-          </Link>
+          )}
           <Link to="/scorecard">
             <Button variant="hero-outline" size="xl">
               Watch the Forest Grow
@@ -142,6 +160,12 @@ const HeroSection = () => {
           <motion.div className="w-1.5 h-1.5 rounded-full bg-primary" />
         </motion.div>
       </motion.div>
+
+      {/* Auth Modal */}
+      <AuthModal
+        isOpen={isAuthModalOpen}
+        onClose={() => setIsAuthModalOpen(false)}
+      />
     </section>
   );
 };

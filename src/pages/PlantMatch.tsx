@@ -1,27 +1,18 @@
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { 
-  Leaf, ArrowRight, ArrowLeft, Package, Recycle, 
-  Wheat, Shirt, Droplets, Factory, MapPin, Calendar,
+import {
+  Leaf, ArrowRight, ArrowLeft, MapPin, Calendar,
   Scale, Check, Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
+import CameraScanner from "@/components/CameraScanner";
 import { z } from "zod";
-
-const categories = [
-  { id: "organic", name: "Organic Waste", icon: Wheat, color: "from-primary to-secondary", description: "Food scraps, coffee grounds, plant matter" },
-  { id: "textiles", name: "Textiles", icon: Shirt, color: "from-violet to-magenta", description: "Fabric, clothing, thread, leather scraps" },
-  { id: "plastics", name: "Plastics", icon: Recycle, color: "from-info to-sky", description: "Clean plastics, packaging, containers" },
-  { id: "metals", name: "Metals", icon: Factory, color: "from-accent to-golden", description: "Scrap metal, cans, electronics" },
-  { id: "paper", name: "Paper & Cardboard", icon: Package, color: "from-golden to-sunlight", description: "Cardboard, office paper, packaging" },
-  { id: "liquids", name: "Liquids & Oils", icon: Droplets, color: "from-ocean to-info", description: "Cooking oil, industrial fluids" },
-];
 
 const listingSchema = z.object({
   type: z.enum(["offering", "seeking"]),
-  category: z.string().min(1, "Please select a category"),
+  imageData: z.string().min(1, "Please capture or upload an image"),
   title: z.string().min(3, "Title must be at least 3 characters").max(100, "Title must be less than 100 characters"),
   description: z.string().min(10, "Description must be at least 10 characters").max(500, "Description must be less than 500 characters"),
   quantity: z.string().min(1, "Please enter quantity"),
@@ -35,7 +26,7 @@ const PlantMatch = () => {
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
     type: "" as "offering" | "seeking" | "",
-    category: "",
+    imageData: "",
     title: "",
     description: "",
     quantity: "",
@@ -48,12 +39,12 @@ const PlantMatch = () => {
 
   const validateStep = () => {
     const newErrors: Record<string, string> = {};
-    
+
     if (step === 1 && !formData.type) {
       newErrors.type = "Please select whether you're offering or seeking materials";
     }
-    if (step === 2 && !formData.category) {
-      newErrors.category = "Please select a category";
+    if (step === 2 && !formData.imageData) {
+      newErrors.imageData = "Please capture or upload an image of your material";
     }
     if (step === 3) {
       if (formData.title.length < 3) newErrors.title = "Title must be at least 3 characters";
@@ -63,7 +54,7 @@ const PlantMatch = () => {
     if (step === 4) {
       if (formData.location.length < 3) newErrors.location = "Please enter a valid location";
     }
-    
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
@@ -78,7 +69,7 @@ const PlantMatch = () => {
 
   const handleSubmit = async () => {
     if (!validateStep()) return;
-    
+
     setIsSubmitting(true);
     // Simulate API call
     await new Promise(resolve => setTimeout(resolve, 1500));
@@ -86,12 +77,12 @@ const PlantMatch = () => {
     setStep(5);
   };
 
-  const selectedCategory = categories.find(c => c.id === formData.category);
+
 
   return (
     <div className="min-h-screen bg-background bg-vibrant-pattern">
       <Navbar />
-      
+
       <main className="pt-28 pb-16 px-4">
         <div className="max-w-2xl mx-auto">
           {/* Header */}
@@ -115,12 +106,11 @@ const PlantMatch = () => {
           {/* Progress Bar */}
           <div className="mb-10">
             <div className="flex justify-between mb-2">
-              {["Type", "Category", "Details", "Location", "Done"].map((label, index) => (
+              {["Type", "Scan", "Details", "Location", "Done"].map((label, index) => (
                 <div
                   key={label}
-                  className={`text-xs font-medium ${
-                    index + 1 <= step ? "text-primary" : "text-muted-foreground"
-                  }`}
+                  className={`text-xs font-medium ${index + 1 <= step ? "text-primary" : "text-muted-foreground"
+                    }`}
                 >
                   {label}
                 </div>
@@ -158,11 +148,10 @@ const PlantMatch = () => {
                     <button
                       key={option.value}
                       onClick={() => setFormData({ ...formData, type: option.value as "offering" | "seeking" })}
-                      className={`p-6 rounded-2xl border-2 transition-all duration-300 text-left group hover:scale-[1.02] ${
-                        formData.type === option.value
+                      className={`p-6 rounded-2xl border-2 transition-all duration-300 text-left group hover:scale-[1.02] ${formData.type === option.value
                           ? "border-primary bg-primary/10 shadow-neon"
                           : "border-border bg-card/50 hover:border-primary/50"
-                      }`}
+                        }`}
                     >
                       <div className="text-4xl mb-3">{option.icon}</div>
                       <div className="font-semibold text-foreground">{option.label}</div>
@@ -174,35 +163,15 @@ const PlantMatch = () => {
               </div>
             )}
 
-            {/* Step 2: Category Selection */}
+            {/* Step 2: Camera Scanner */}
             {step === 2 && (
-              <div className="space-y-6">
-                <h2 className="text-xl font-semibold text-center mb-6">
-                  Select a category
-                </h2>
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {categories.map((cat) => {
-                    const Icon = cat.icon;
-                    return (
-                      <button
-                        key={cat.id}
-                        onClick={() => setFormData({ ...formData, category: cat.id })}
-                        className={`p-4 rounded-2xl border-2 transition-all duration-300 group hover:scale-[1.02] ${
-                          formData.category === cat.id
-                            ? "border-primary bg-primary/10 shadow-neon"
-                            : "border-border bg-card/50 hover:border-primary/50"
-                        }`}
-                      >
-                        <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${cat.color} flex items-center justify-center mb-3 mx-auto group-hover:scale-110 transition-transform`}>
-                          <Icon className="w-6 h-6 text-white" />
-                        </div>
-                        <div className="font-medium text-sm text-foreground">{cat.name}</div>
-                      </button>
-                    );
-                  })}
-                </div>
-                {errors.category && <p className="text-destructive text-sm text-center">{errors.category}</p>}
-              </div>
+              <CameraScanner
+                onCapture={(imageData) => {
+                  setFormData({ ...formData, imageData });
+                  setErrors({ ...errors, imageData: "" });
+                }}
+                onCancel={() => setStep(1)}
+              />
             )}
 
             {/* Step 3: Details */}
@@ -211,14 +180,14 @@ const PlantMatch = () => {
                 <h2 className="text-xl font-semibold text-center mb-6">
                   Tell us about your {formData.type === "offering" ? "materials" : "needs"}
                 </h2>
-                
+
                 <div>
                   <label className="block text-sm font-medium mb-2">Title</label>
                   <input
                     type="text"
                     value={formData.title}
                     onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                    placeholder={`e.g., ${selectedCategory?.description.split(",")[0] || "Fresh coffee grounds"}`}
+                    placeholder="e.g., Fresh coffee grounds, Plastic bottles, Cardboard boxes"
                     className="eco-input w-full"
                     maxLength={100}
                   />
@@ -265,7 +234,7 @@ const PlantMatch = () => {
                     </div>
                     {errors.quantity && <p className="text-destructive text-sm mt-1">{errors.quantity}</p>}
                   </div>
-                  
+
                   <div>
                     <label className="block text-sm font-medium mb-2">Frequency</label>
                     <select
@@ -289,7 +258,7 @@ const PlantMatch = () => {
                 <h2 className="text-xl font-semibold text-center mb-6">
                   Where are you located?
                 </h2>
-                
+
                 <div>
                   <label className="block text-sm font-medium mb-2">
                     <MapPin className="w-4 h-4 inline mr-1" />
@@ -312,16 +281,21 @@ const PlantMatch = () => {
                 {/* Summary Preview */}
                 <div className="mt-8 p-4 bg-muted/30 rounded-2xl border border-border">
                   <h3 className="font-medium mb-3 text-sm text-muted-foreground">Listing Preview</h3>
-                  <div className="space-y-2">
+                  <div className="space-y-3">
+                    {formData.imageData && (
+                      <img
+                        src={formData.imageData}
+                        alt="Material preview"
+                        className="w-full h-32 object-cover rounded-xl"
+                      />
+                    )}
                     <div className="flex items-center gap-2">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        formData.type === "offering" 
-                          ? "bg-primary/20 text-primary" 
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${formData.type === "offering"
+                          ? "bg-primary/20 text-primary"
                           : "bg-info/20 text-info"
-                      }`}>
+                        }`}>
                         {formData.type === "offering" ? "Offering" : "Seeking"}
                       </span>
-                      <span className="eco-badge">{selectedCategory?.name}</span>
                     </div>
                     <h4 className="font-semibold text-foreground">{formData.title || "Untitled"}</h4>
                     <p className="text-sm text-muted-foreground line-clamp-2">{formData.description}</p>
@@ -361,7 +335,7 @@ const PlantMatch = () => {
                   <Button variant="eco" onClick={() => navigate("/scorecard")}>
                     View Your Impact
                   </Button>
-                  <Button variant="outline" onClick={() => { setStep(1); setFormData({ type: "", category: "", title: "", description: "", quantity: "", unit: "kg", location: "", frequency: "one-time" }); }}>
+                  <Button variant="outline" onClick={() => { setStep(1); setFormData({ type: "", imageData: "", title: "", description: "", quantity: "", unit: "kg", location: "", frequency: "one-time" }); }}>
                     Plant Another Match
                   </Button>
                 </div>
@@ -382,15 +356,15 @@ const PlantMatch = () => {
                     Home
                   </Button>
                 )}
-                
+
                 {step < 4 ? (
                   <Button variant="eco" onClick={nextStep}>
                     Continue
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
                 ) : (
-                  <Button 
-                    variant="hero" 
+                  <Button
+                    variant="hero"
                     onClick={handleSubmit}
                     disabled={isSubmitting}
                   >
