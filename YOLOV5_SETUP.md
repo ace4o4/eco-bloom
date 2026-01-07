@@ -1,6 +1,4 @@
-# YOLOv5 Backend Setup & Usage Guide
 
-## 🚀 Quick Start
 
 ### Step 1: Backend Setup
 
