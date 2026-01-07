@@ -3,12 +3,13 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Leaf, ArrowRight, ArrowLeft, MapPin, Calendar,
-  Scale, Check, Sparkles
+  Scale, Check, Sparkles, Search, Sprout
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
 import CameraScanner from "@/components/CameraScanner";
 import { z } from "zod";
+import type { MaterialDetectionResult } from "@/services/aiMaterialDetection";
 
 const listingSchema = z.object({
   type: z.enum(["offering", "seeking"]),
@@ -142,15 +143,15 @@ const PlantMatch = () => {
                 </h2>
                 <div className="grid grid-cols-2 gap-4">
                   {[
-                    { value: "offering", label: "I'm Offering", icon: "🌱", desc: "I have materials to share" },
-                    { value: "seeking", label: "I'm Seeking", icon: "🔍", desc: "I need materials" },
+                    { value: "offering", label: "I'm Offering", IconComponent: Sprout, desc: "I have materials to share" },
+                    { value: "seeking", label: "I'm Seeking", IconComponent: Search, desc: "I need materials" },
                   ].map((option) => (
                     <button
                       key={option.value}
                       onClick={() => setFormData({ ...formData, type: option.value as "offering" | "seeking" })}
                       className={`p-6 rounded-2xl border-2 transition-all duration-300 text-left group hover:scale-[1.02] ${formData.type === option.value
-                          ? "border-primary bg-primary/10 shadow-neon"
-                          : "border-border bg-card/50 hover:border-primary/50"
+                        ? "border-primary bg-primary/10 shadow-neon"
+                        : "border-border bg-card/50 hover:border-primary/50"
                         }`}
                     >
                       <div className="text-4xl mb-3">{option.icon}</div>
@@ -166,9 +167,24 @@ const PlantMatch = () => {
             {/* Step 2: Camera Scanner */}
             {step === 2 && (
               <CameraScanner
-                onCapture={(imageData) => {
+                onCapture={(imageData, aiResult) => {
+                  // Set image data
                   setFormData({ ...formData, imageData });
                   setErrors({ ...errors, imageData: "" });
+
+                  // Auto-fill from AI if available
+                  if (aiResult) {
+                    console.log("🤖 Auto-filling form with YOLOv5 results:", aiResult);
+                    setFormData(prev => ({
+                      ...prev,
+                      imageData,
+                      title: aiResult.title,
+                      description: aiResult.description,
+                      quantity: aiResult.estimatedWeight?.replace(/[^\d.]/g, '') || "", // Extract number
+                      unit: aiResult.estimatedWeight?.includes('kg') ? 'kg' :
+                        aiResult.estimatedWeight?.includes('g') ? 'grams' : 'pieces',
+                    }));
+                  }
                 }}
                 onCancel={() => setStep(1)}
               />
@@ -274,7 +290,7 @@ const PlantMatch = () => {
                   />
                   {errors.location && <p className="text-destructive text-sm mt-1">{errors.location}</p>}
                   <p className="text-xs text-muted-foreground mt-2">
-                    We prioritize local matches to minimize carbon footprint 🌿
+                    <span className="inline-flex items-center gap-1">We prioritize local matches to minimize carbon footprint <Leaf className="w-3.5 h-3.5 inline" /></span>
                   </p>
                 </div>
 
@@ -291,8 +307,8 @@ const PlantMatch = () => {
                     )}
                     <div className="flex items-center gap-2">
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${formData.type === "offering"
-                          ? "bg-primary/20 text-primary"
-                          : "bg-info/20 text-info"
+                        ? "bg-primary/20 text-primary"
+                        : "bg-info/20 text-info"
                         }`}>
                         {formData.type === "offering" ? "Offering" : "Seeking"}
                       </span>
@@ -326,7 +342,7 @@ const PlantMatch = () => {
                   <Check className="w-10 h-10 text-white" />
                 </motion.div>
                 <h2 className="text-2xl font-bold mb-2">
-                  <span className="text-gradient-eco">Match Planted! 🌱</span>
+                  <span className="text-gradient-eco inline-flex items-center gap-2">Match Planted! <Sprout className="w-5 h-5" /></span>
                 </h2>
                 <p className="text-muted-foreground mb-8">
                   Your listing is now live. We'll notify you when we find a match.

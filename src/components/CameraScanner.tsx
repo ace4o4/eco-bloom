@@ -1,10 +1,11 @@
 import { useState, useRef, useEffect, useCallback } from "react";
-import { Camera, Upload, X, RotateCcw, Check } from "lucide-react";
+import { Camera, Upload, X, RotateCcw, Check, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
+import { analyzeMaterialImage, type MaterialDetectionResult } from "@/services/aiMaterialDetection";
 
 interface CameraScannerProps {
-    onCapture: (imageData: string) => void;
+    onCapture: (imageData: string, aiResult?: MaterialDetectionResult) => void;
     onCancel?: () => void;
 }
 
@@ -14,6 +15,8 @@ const CameraScanner = ({ onCapture, onCancel }: CameraScannerProps) => {
     const [capturedImage, setCapturedImage] = useState<string | null>(null);
     const [error, setError] = useState<string>("");
     const [isLoading, setIsLoading] = useState(false);
+    const [isAnalyzing, setIsAnalyzing] = useState(false);
+    const [aiResult, setAiResult] = useState<MaterialDetectionResult | null>(null);
 
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -24,32 +27,57 @@ const CameraScanner = ({ onCapture, onCancel }: CameraScannerProps) => {
         setIsLoading(true);
         setError("");
         try {
+            console.log("🎥 Requesting camera access...");
+
             const mediaStream = await navigator.mediaDevices.getUserMedia({
                 video: {
-                    facingMode: "environment",
                     width: { ideal: 1280 },
                     height: { ideal: 720 }
                 },
                 audio: false,
             });
 
-            setStream(mediaStream);
-            if (videoRef.current) {
-                videoRef.current.srcObject = mediaStream;
+            console.log("✅ Camera stream obtained:", mediaStream);
+            console.log("📹 Video tracks:", mediaStream.getVideoTracks().length);
 
-                // Critical fix for black screen: ensure video plays after metadata loads
-                videoRef.current.onloadedmetadata = () => {
-                    if (videoRef.current) {
-                        videoRef.current.play().catch((err) => {
-                            console.error("Error playing video:", err);
-                            setError("Unable to start video playback. Please try again.");
-                        });
-                    }
-                };
-            }
-            setMode("camera");
+            setStream(mediaStream);
+            setMode("camera"); // Set mode FIRST to render video element
+
+            // Wait for video element to be mounted in DOM
+            setTimeout(() => {
+                if (videoRef.current) {
+                    console.log("🎬 Assigning stream to video element...");
+                    videoRef.current.srcObject = mediaStream;
+
+                    // Try to play immediately
+                    videoRef.current.muted = true;
+                    videoRef.current.playsInline = true;
+
+                    // Attempt 1: Try playing right away
+                    videoRef.current.play().catch(err => {
+                        console.warn("⚠️ Immediate play failed, waiting for metadata:", err);
+                    });
+
+                    // Attempt 2: Wait for metadata and play
+                    videoRef.current.onloadedmetadata = () => {
+                        console.log("📊 Video metadata loaded");
+                        if (videoRef.current) {
+                            videoRef.current.play()
+                                .then(() => {
+                                    console.log("✅ Video playing successfully!");
+                                })
+                                .catch((err) => {
+                                    console.error("❌ Video play error:", err);
+                                    setError("Unable to start video playback. Please try again.");
+                                });
+                        }
+                    };
+                } else {
+                    console.error("❌ Video element not found after timeout!");
+                }
+            }, 200); // Wait 200ms for React to render video element
         } catch (err) {
-            console.error("Camera error:", err);
+            console.error("❌ Camera error:", err);
             if (err instanceof Error) {
                 if (err.name === "NotAllowedError") {
                     setError("Camera permission denied. Please allow camera access or use file upload.");
@@ -58,7 +86,7 @@ const CameraScanner = ({ onCapture, onCancel }: CameraScannerProps) => {
                 } else if (err.name === "NotReadableError") {
                     setError("Camera is already in use by another application.");
                 } else {
-                    setError("Unable to access camera. Please try file upload instead.");
+                    setError(`Unable to access camera: ${err.message}. Please try file upload instead.`);
                 }
             }
             setMode("select");
@@ -79,7 +107,7 @@ const CameraScanner = ({ onCapture, onCancel }: CameraScannerProps) => {
     }, [stream]);
 
     // Capture photo from video stream
-    const capturePhoto = () => {
+    const capturePhoto = async () => {
         if (videoRef.current && canvasRef.current) {
             const video = videoRef.current;
             const canvas = canvasRef.current;
@@ -93,7 +121,29 @@ const CameraScanner = ({ onCapture, onCancel }: CameraScannerProps) => {
                 const imageData = canvas.toDataURL("image/jpeg", 0.8);
                 setCapturedImage(imageData);
                 stopCamera();
+
+                // Trigger AI analysis
+                await analyzeImage(imageData);
             }
+        }
+    };
+
+    // AI Analysis function
+    const analyzeImage = async (imageData: string) => {
+        setIsAnalyzing(true);
+        setError("");
+
+        try {
+            console.log("🤖 Starting YOLOv5 analysis...");
+            const result = await analyzeMaterialImage(imageData);
+            setAiResult(result);
+            console.log("✅ Analysis complete:", result);
+        } catch (err) {
+            console.error("AI analysis failed:", err);
+            const errorMsg = err instanceof Error ? err.message : "Unknown error";
+            setError(`AI detection failed: ${errorMsg}`);
+        } finally {
+            setIsAnalyzing(false);
         }
     };
 
@@ -114,10 +164,13 @@ const CameraScanner = ({ onCapture, onCancel }: CameraScannerProps) => {
             }
 
             const reader = new FileReader();
-            reader.onload = (event) => {
+            reader.onload = async (event) => {
                 const result = event.target?.result as string;
                 setCapturedImage(result);
                 setMode("upload");
+
+                // Trigger AI analysis
+                await analyzeImage(result);
             };
             reader.readAsDataURL(file);
         }
@@ -126,13 +179,14 @@ const CameraScanner = ({ onCapture, onCancel }: CameraScannerProps) => {
     // Confirm and send image to parent
     const confirmImage = () => {
         if (capturedImage) {
-            onCapture(capturedImage);
+            onCapture(capturedImage, aiResult || undefined);
         }
     };
 
     // Retake/change photo
     const retake = () => {
         setCapturedImage(null);
+        setAiResult(null);
         setError("");
         setMode("select");
     };
@@ -224,6 +278,7 @@ const CameraScanner = ({ onCapture, onCancel }: CameraScannerProps) => {
                             ref={videoRef}
                             autoPlay
                             playsInline
+                            muted
                             className="w-full h-full object-cover"
                         />
 
@@ -277,6 +332,60 @@ const CameraScanner = ({ onCapture, onCancel }: CameraScannerProps) => {
                             </div>
                         </div>
                     </div>
+
+                    {/* AI Analysis - Loading */}
+                    {isAnalyzing && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="p-4 bg-primary/10 border border-primary/20 rounded-xl flex items-center gap-3"
+                        >
+                            <Loader2 className="w-5 h-5 text-primary animate-spin" />
+                            <div>
+                                <p className="font-medium text-sm">Analyzing with YOLOv5...</p>
+                                <p className="text-xs text-muted-foreground">Detecting objects and materials</p>
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {/* AI Analysis - Results */}
+                    {aiResult && !isAnalyzing && (
+                        <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            className="p-4 bg-gradient-to-br from-primary/10 to-secondary/10 border border-primary/20 rounded-xl space-y-3"
+                        >
+                            <div className="flex items-center gap-2">
+                                <Sparkles className="w-5 h-5 text-primary" />
+                                <h3 className="font-semibold">AI Detection Results</h3>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3 text-sm">
+                                <div>
+                                    <p className="text-muted-foreground text-xs">Material:</p>
+                                    <p className="font-medium">{aiResult.materialType}</p>
+                                </div>
+                                <div>
+                                    <p className="text-muted-foreground text-xs">Category:</p>
+                                    <p className="font-medium capitalize">{aiResult.suggestedCategory}</p>
+                                </div>
+                                <div>
+                                    <p className="text-muted-foreground text-xs">Recyclable:</p>
+                                    <p className={`font-medium ${aiResult.isRecyclable ? 'text-green-500' : 'text-orange-500'}`}>
+                                        {aiResult.isRecyclable ? '✓ Yes' : '○ Reusable'}
+                                    </p>
+                                </div>
+                                <div>
+                                    <p className="text-muted-foreground text-xs">Confidence:</p>
+                                    <p className="font-medium">{(aiResult.confidence * 100).toFixed(0)}%</p>
+                                </div>
+                            </div>
+                            {aiResult.estimatedWeight && (
+                                <div className="text-xs text-muted-foreground pt-2 border-t border-white/10">
+                                    📦 Est. Weight: {aiResult.estimatedWeight}
+                                </div>
+                            )}
+                        </motion.div>
+                    )}
 
                     <div className="flex gap-3">
                         <Button variant="outline" onClick={retake} className="flex-1">

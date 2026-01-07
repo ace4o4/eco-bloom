@@ -21,7 +21,7 @@ const App = () => (
       <TooltipProvider>
         <Toaster />
         <Sonner />
-        <BrowserRouter>
+        <BrowserRouter basename="/eco-bloom">
           <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/dashboard" element={
@@ -29,11 +29,7 @@ const App = () => (
                 <Dashboard />
               </ProtectedRoute>
             } />
-            <Route path="/plant-match" element={
-              <ProtectedRoute>
-                <PlantMatch />
-              </ProtectedRoute>
-            } />
+            <Route path="/plant-match" element={<PlantMatch />} />
             <Route path="/scorecard" element={<Scorecard />} />
             <Route path="/eco-map" element={<EcoMap />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
