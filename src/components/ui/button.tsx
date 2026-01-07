@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
@@ -17,11 +18,11 @@ const buttonVariants = cva(
           "border-2 border-primary/30 bg-transparent text-primary hover:bg-primary/10 hover:border-primary/60",
         secondary:
           "bg-secondary/20 text-secondary border border-secondary/40 hover:bg-secondary/30 hover:border-secondary/60",
-        ghost: 
+        ghost:
           "text-foreground hover:bg-primary/10 hover:text-primary",
-        link: 
+        link:
           "text-primary underline-offset-4 hover:underline",
-        eco: 
+        eco:
           "bg-gradient-to-r from-primary to-secondary text-primary-foreground shadow-eco-soft hover:shadow-neon-lg hover:scale-[1.02] active:scale-[0.98]",
         hero:
           "bg-gradient-to-r from-primary via-secondary to-electric text-primary-foreground shadow-lg hover:shadow-neon-lg hover:scale-[1.03] active:scale-[0.98] text-base font-bold",
@@ -53,7 +54,7 @@ const buttonVariants = cva(
 
 export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
+  VariantProps<typeof buttonVariants> {
   asChild?: boolean;
 }
 
