@@ -167,7 +167,7 @@ const PlantMatch = () => {
   };
 
   // Seeking flow handlers
-  const handleSearch = async (filters: any) => {
+  const handleSearch = async (filters: SearchFilters) => {
     setIsLoadingListings(true);
 
     try {
