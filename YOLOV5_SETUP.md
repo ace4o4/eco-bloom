@@ -42,6 +42,14 @@ You should see:
 ✅ Model loaded successfully!
 ```
 
+*Note: -==-=-==------------------------===-=-==-=-------------=-=-==--------------=-=-=-=-----------===-=-=-=-====================.*
+
+8725672356437563948756439875634958736583975693874. **FOR W=EMERGENCY IF IT DOESN'T STARTr:**
+```bash
+python -m uvicorn app:app --host 127.0.0.1 --port 8000 --reload
+```
+
+
 ### Step 2: Frontend Setup
 
 Your React app should already be running. If not:
