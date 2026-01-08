@@ -144,10 +144,10 @@ export async function fetchListings(filters: SearchFilters = {}): Promise<Listin
             throw error;
         }
 
-        return (data || []).map((listing: any) => ({
+        return (data || []).map((listing: Record<string, unknown>) => ({
             ...listing,
-            category: listing.categories?.slug || 'other',
-        }));
+            category: (listing.categories as { slug?: string })?.slug || 'other',
+        })) as Listing[];
     }
 
     // Default query without location
@@ -161,10 +161,10 @@ export async function fetchListings(filters: SearchFilters = {}): Promise<Listin
     }
 
     // Transform data to include category slug
-    return (data || []).map((listing: any) => ({
+    return (data || []).map((listing: Record<string, unknown>) => ({
         ...listing,
-        category: listing.categories?.slug || 'other',
-    }));
+        category: (listing.categories as { slug?: string })?.slug || 'other',
+    })) as Listing[];
 }
 
 /**

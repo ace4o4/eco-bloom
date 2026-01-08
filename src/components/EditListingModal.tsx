@@ -68,9 +68,10 @@ const EditListingModal = ({
 
             onSuccess();
             onClose();
-        } catch (err: any) {
-            console.error('Error updating listing:', err);
-            setError(err.message || 'Failed to update listing');
+        } catch (err) {
+            const error = err as Error;
+            console.error('Error updating listing:', error);
+            setError(error.message || 'Failed to update listing');
         } finally {
             setIsSaving(false);
         }

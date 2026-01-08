@@ -43,10 +43,10 @@ const MyListings = ({ onEdit, onDelete }: MyListingsProps) => {
             if (error) throw error;
 
             // Transform data
-            const transformedListings = (data || []).map((listing: any) => ({
+            const transformedListings = (data || []).map((listing: Record<string, unknown>) => ({
                 ...listing,
-                category: listing.categories?.slug || 'other',
-            }));
+                category: (listing.categories as { slug?: string })?.slug || 'other',
+            })) as Listing[];
 
             setListings(transformedListings);
         } catch (error) {
