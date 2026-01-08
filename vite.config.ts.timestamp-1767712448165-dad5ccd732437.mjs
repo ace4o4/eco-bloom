@@ -4,7 +4,7 @@ import react from "file:///C:/Users/Cyber%20ACE/Documents/New%20folder/eco/eco-b
 import path from "path";
 import { componentTagger } from "file:///C:/Users/Cyber%20ACE/Documents/New%20folder/eco/eco-bloom/node_modules/lovable-tagger/dist/index.js";
 var __vite_injected_original_dirname = "C:\\Users\\Cyber ACE\\Documents\\New folder\\eco\\eco-bloom";
-var vite_config_default = defineConfig(({ mode }) => ({
+var vite_config_default = defineConfig(({ modin }) => ({
   server: {
     host: "::",
     port: 8080
