@@ -3,13 +3,24 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Leaf, ArrowRight, ArrowLeft, MapPin, Calendar,
-  Scale, Check, Sparkles, Search, Sprout
+  Scale, Check, Sparkles, Search, Sprout, HandHeart
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
 import CameraScanner from "@/components/CameraScanner";
+import SearchInterface from "@/components/SearchInterface";
+import ListingsBrowse from "@/components/ListingsBrowse";
+import ContactDialog from "@/components/ContactDialog";
+import type { Listing as UIListing } from "@/components/ListingsBrowse";
 import { z } from "zod";
 import type { MaterialDetectionResult } from "@/services/aiMaterialDetection";
+import {
+  createListing,
+  fetchListings,
+  uploadListingImageFromBase64,
+  type Listing as DBListing,
+} from "@/lib/supabase-listings";
+import { getCurrentLocation, calculateDistance } from "@/lib/geolocation";
 
 const listingSchema = z.object({
   type: z.enum(["offering", "seeking"]),
@@ -22,21 +33,46 @@ const listingSchema = z.object({
   frequency: z.string().min(1, "Please select frequency"),
 });
 
+
+// Map form categories to database slugs
+const getCategorySlug = (category: string): string => {
+  const categoryMap: Record<string, string> = {
+    'organic': 'organic',
+    'textiles': 'textiles',
+    'plastic': 'plastics',
+    'plastics': 'plastics',
+    'metal': 'metals',
+    'metals': 'metals',
+    'paper': 'paper',
+    'electronics': 'plastics', // fallback
+    'glass': 'plastics', // fallback
+    'other': 'organic', // fallback to first category
+  };
+  return categoryMap[category?.toLowerCase()] || 'organic';
+};
+
 const PlantMatch = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState({
-    type: "" as "offering" | "seeking" | "",
+    type: "",
     imageData: "",
     title: "",
     description: "",
+    category: "",
     quantity: "",
-    unit: "kg",
+    unit: "units",
     location: "",
     frequency: "one-time",
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Seeking flow state
+  const [listings, setListings] = useState<UIListing[]>([]);
+  const [isLoadingListings, setIsLoadingListings] = useState(false);
+  const [selectedListing, setSelectedListing] = useState<UIListing | null>(null);
+  const [showContactDialog, setShowContactDialog] = useState(false);
 
   const validateStep = () => {
     const newErrors: Record<string, string> = {};
@@ -72,10 +108,142 @@ const PlantMatch = () => {
     if (!validateStep()) return;
 
     setIsSubmitting(true);
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    setIsSubmitting(false);
-    setStep(5);
+
+    try {
+      // Upload image to Supabase Storage
+      let imageUrl = '';
+      if (formData.imageData) {
+        console.log('📤 Uploading image...');
+        imageUrl = await uploadListingImageFromBase64(formData.imageData);
+        console.log('✅ Image uploaded:', imageUrl);
+      }
+
+      // Get location
+      let locationData = {};
+      try {
+        const location = await getCurrentLocation();
+        locationData = {
+          location_lat: location.coords.lat,
+          location_lng: location.coords.lng,
+          location_address: location.address,
+        };
+        console.log('📍 Location:', location.address);
+      } catch (error) {
+        console.log('⚠️ Location not available:', error);
+        // Fallback to manual location
+        locationData = {
+          location_address: formData.location,
+        };
+      }
+
+      // Create listing
+      const listingData: DBListing = {
+        type: formData.type as 'offering',
+        title: formData.title,
+        description: formData.description,
+        category: getCategorySlug(formData.category), // Map to slug
+        quantity: formData.quantity,
+        unit: formData.unit,
+        frequency: formData.frequency,
+        image_url: imageUrl,
+        ...locationData,
+      };
+
+      console.log('💾 Creating listing...');
+      await createListing(listingData);
+      console.log('✅ Listing created successfully!');
+
+      setIsSubmitting(false);
+      setStep(5);
+    } catch (error) {
+      console.error('❌ Error creating listing:', error);
+      setIsSubmitting(false);
+      alert(
+        error instanceof Error
+          ? `Failed to create listing: ${error.message}`
+          : 'Failed to create listing. Please try again.'
+      );
+    }
+  };
+
+  // Seeking flow handlers
+  const handleSearch = async (filters: any) => {
+    setIsLoadingListings(true);
+
+    try {
+      console.log('🔍 Searching listings with filters:', filters);
+
+      // Get user location if not provided
+      let userLocation;
+      if (filters.location && filters.radius) {
+        try {
+          const location = await getCurrentLocation();
+          userLocation = location.coords;
+          filters.location = userLocation;
+        } catch (error) {
+          console.log('⚠️ Location not available, searching without distance filter');
+          filters.location = null;
+          filters.radius = null;
+        }
+      }
+
+      // Fetch real listings from Supabase
+      const data = await fetchListings(filters);
+
+      // Calculate distances if we have user location
+      const listingsWithDistance: UIListing[] = data.map(listing => {
+        let distance;
+        if (userLocation && listing.location_lat && listing.location_lng) {
+          distance = calculateDistance(
+            userLocation,
+            { lat: listing.location_lat, lng: listing.location_lng }
+          );
+        }
+
+        return {
+          id: listing.id!,
+          title: listing.title,
+          description: listing.description,
+          category: listing.category,
+          quantity: listing.quantity,
+          unit: listing.unit,
+          imageData: listing.image_url || '',
+          location: {
+            address: listing.location_address || 'Location not specified',
+            distance,
+          },
+          user: {
+            name: listing.contact_name,
+            email: listing.contact_email,
+            phone: listing.contact_phone,
+          },
+          createdAt: listing.created_at || new Date().toISOString(),
+        };
+      });
+
+      console.log(`✅ Found ${listingsWithDistance.length} listings`);
+      setListings(listingsWithDistance);
+      setIsLoadingListings(false);
+      setStep(3); // Move to browse listings
+    } catch (error) {
+      console.error('❌ Error fetching listings:', error);
+      setIsLoadingListings(false);
+      alert(
+        error instanceof Error
+          ? `Failed to fetch listings: ${error.message}`
+          : 'Failed to fetch listings. Please try again.'
+      );
+    }
+  };
+
+  const handleContact = (listing: UIListing) => {
+    setSelectedListing(listing);
+    setShowContactDialog(true);
+  };
+
+  const handleCloseContactDialog = () => {
+    setShowContactDialog(false);
+    setSelectedListing(null);
   };
 
 
@@ -107,15 +275,23 @@ const PlantMatch = () => {
           {/* Progress Bar */}
           <div className="mb-10">
             <div className="flex justify-between mb-2">
-              {["Type", "Scan", "Details", "Location", "Done"].map((label, index) => (
-                <div
-                  key={label}
-                  className={`text-xs font-medium ${index + 1 <= step ? "text-primary" : "text-muted-foreground"
-                    }`}
-                >
-                  {label}
-                </div>
-              ))}
+              {(formData.type === "offering"
+                ? ["Type", "Scan", "Details", "Location", "Done"]
+                : formData.type === "seeking"
+                  ? ["Type", "Search", "Browse", "Contact", ""]
+                  : ["Type", "Next", "Details", "Location", "Done"]
+              ).map((label, index) => {
+                if (!label) return <div key={index} className="w-12" />; // Empty space
+                return (
+                  <div
+                    key={label}
+                    className={`text-xs font-medium ${index + 1 <= step ? "text-primary" : "text-muted-foreground"
+                      }`}
+                  >
+                    {label}
+                  </div>
+                );
+              })}
             </div>
             <div className="h-2 bg-muted rounded-full overflow-hidden">
               <motion.div
@@ -154,9 +330,17 @@ const PlantMatch = () => {
                         : "border-border bg-card/50 hover:border-primary/50"
                         }`}
                     >
-                      <div className="text-4xl mb-3">{option.icon}</div>
-                      <div className="font-semibold text-foreground">{option.label}</div>
-                      <div className="text-sm text-muted-foreground">{option.desc}</div>
+                      <div className="flex flex-col items-center space-y-4">
+                        <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center group-hover:scale-110 transition-transform">
+                          <option.IconComponent className="w-10 h-10 text-white" strokeWidth={2} />
+                        </div>
+                        <div className="text-center">
+                          <h3 className="text-xl font-semibold mb-2">{option.label}</h3>
+                          <p className="text-sm text-muted-foreground">
+                            {option.desc}
+                          </p>
+                        </div>
+                      </div>
                     </button>
                   ))}
                 </div>
@@ -164,8 +348,8 @@ const PlantMatch = () => {
               </div>
             )}
 
-            {/* Step 2: Camera Scanner */}
-            {step === 2 && (
+            {/* Step 2: Camera Scanner (OFFERING ONLY) */}
+            {step === 2 && formData.type === "offering" && (
               <CameraScanner
                 onCapture={(imageData, aiResult) => {
                   // Set image data
@@ -182,7 +366,9 @@ const PlantMatch = () => {
                       description: aiResult.description,
                       quantity: aiResult.estimatedWeight?.replace(/[^\d.]/g, '') || "", // Extract number
                       unit: aiResult.estimatedWeight?.includes('kg') ? 'kg' :
-                        aiResult.estimatedWeight?.includes('g') ? 'grams' : 'pieces',
+                        aiResult.estimatedWeight?.includes('ton') ? 'tons' :
+                          aiResult.estimatedWeight?.includes('liter') || aiResult.estimatedWeight?.includes('L') ? 'liters' :
+                            'units', // Default to 'units' for grams, pieces, etc
                     }));
                   }
                 }}
@@ -190,8 +376,37 @@ const PlantMatch = () => {
               />
             )}
 
-            {/* Step 3: Details */}
-            {step === 3 && (
+            {/* Step 2: Search Interface (SEEKING ONLY) */}
+            {step === 2 && formData.type === "seeking" && (
+              <SearchInterface
+                onSearch={handleSearch}
+                onBack={() => setStep(1)}
+              />
+            )}
+
+            {/* Step 3: Browse Listings (SEEKING ONLY) */}
+            {step === 3 && formData.type === "seeking" && (
+              <div className="space-y-6">
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="outline"
+                    onClick={() => setStep(2)}
+                    size="sm"
+                  >
+                    <ArrowLeft className="w-4 h-4 mr-2" />
+                    Back to Search
+                  </Button>
+                </div>
+                <ListingsBrowse
+                  listings={listings}
+                  onContact={handleContact}
+                  isLoading={isLoadingListings}
+                />
+              </div>
+            )}
+
+            {/* Step 3: Details (OFFERING ONLY) */}
+            {step === 3 && formData.type === "offering" && (
               <div className="space-y-6">
                 <h2 className="text-xl font-semibold text-center mb-6">
                   Tell us about your {formData.type === "offering" ? "materials" : "needs"}
@@ -224,46 +439,46 @@ const PlantMatch = () => {
                     <span className="text-xs text-muted-foreground ml-auto">{formData.description.length}/500</span>
                   </div>
                 </div>
-
+                {/* Material Details */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">Quantity</label>
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        value={formData.quantity}
-                        onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-                        placeholder="0"
-                        className="eco-input flex-1"
-                        min="0"
-                      />
-                      <select
-                        value={formData.unit}
-                        onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
-                        className="eco-select w-24"
-                      >
-                        <option value="kg">kg</option>
-                        <option value="tons">tons</option>
-                        <option value="liters">liters</option>
-                        <option value="units">units</option>
-                      </select>
-                    </div>
-                    {errors.quantity && <p className="text-destructive text-sm mt-1">{errors.quantity}</p>}
+                    <input
+                      type="number"
+                      value={formData.quantity}
+                      onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                      placeholder="e.g., 100"
+                      className="eco-input w-full"
+                    />
+                    {errors.quantity && <p className="text-destructive text-xs mt-1">{errors.quantity}</p>}
                   </div>
-
                   <div>
-                    <label className="block text-sm font-medium mb-2">Frequency</label>
+                    <label className="block text-sm font-medium mb-2">Unit</label>
                     <select
-                      value={formData.frequency}
-                      onChange={(e) => setFormData({ ...formData, frequency: e.target.value })}
+                      value={formData.unit}
+                      onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
                       className="eco-select w-full"
                     >
-                      <option value="one-time">One-time</option>
-                      <option value="weekly">Weekly</option>
-                      <option value="monthly">Monthly</option>
-                      <option value="ongoing">Ongoing</option>
+                      <option value="kg">Kilograms (kg)</option>
+                      <option value="tons">Tons</option>
+                      <option value="liters">Liters</option>
+                      <option value="units">Units/Pieces</option>
                     </select>
                   </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Frequency</label>
+                  <select
+                    value={formData.frequency}
+                    onChange={(e) => setFormData({ ...formData, frequency: e.target.value })}
+                    className="eco-select w-full"
+                  >
+                    <option value="one-time">One-time</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="ongoing">Ongoing</option>
+                  </select>
                 </div>
               </div>
             )}
@@ -351,7 +566,7 @@ const PlantMatch = () => {
                   <Button variant="eco" onClick={() => navigate("/scorecard")}>
                     View Your Impact
                   </Button>
-                  <Button variant="outline" onClick={() => { setStep(1); setFormData({ type: "", imageData: "", title: "", description: "", quantity: "", unit: "kg", location: "", frequency: "one-time" }); }}>
+                  <Button variant="outline" onClick={() => { setStep(1); setFormData({ type: "", imageData: "", title: "", description: "", category: "", quantity: "", unit: "units", location: "", frequency: "one-time" }); }}>
                     Plant Another Match
                   </Button>
                 </div>
@@ -401,8 +616,15 @@ const PlantMatch = () => {
             )}
           </motion.div>
         </div>
-      </main>
-    </div>
+      </main >
+
+      {/* Contact Dialog */}
+      < ContactDialog
+        listing={selectedListing}
+        isOpen={showContactDialog}
+        onClose={handleCloseContactDialog}
+      />
+    </div >
   );
 };
 
