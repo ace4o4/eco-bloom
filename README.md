@@ -178,7 +178,7 @@ This project is licensed under the MIT License - see the [LICENSE](./LICENSE) fi
 
 If you find this project useful, please consider giving it a star ⭐
 
-[![Star History Chart](https://api.star-history.com/svg?repos=ace4o4/eco-bloom&type=Date)](https://star-history.com/#ace4o4/eco-bloom&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=ace4o4/eco-bloom&type=date&legend=top-left)](https://www.star-history.com/#ace4o4/eco-bloom&type=date&legend=top-left)
 
 ---
 
