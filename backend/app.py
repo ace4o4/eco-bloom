@@ -134,7 +134,14 @@ async def detect_objects(request: DetectionRequest):
 
 if __name__ == "__main__":
     import uvicorn
+    import os
+    
+    port = int(os.environ.get("PORT", 8000))
     print("🚀 Starting Eco-Bloom AI Detection API...")
-    print("📍 Server will run on: http://localhost:8000")
-    print("📖 API docs: http://localhost:8000/docs")
-    uvicorn.run(app, host="0.0.0.0", port=8000, reload=True)
+    print(f"📍 Server will run on: http://0.0.0.0:{port}")
+    print(f"📖 API docs: http://0.0.0.0:{port}/docs")
+    
+    # Reload functionality is useful for dev but 'reload=True' implies specific worker handling. 
+    # Usually fine for dev, but in prod we might want it off or controlled. 
+    # For now, matching previous behavior but with explicit host/port.
+    uvicorn.run(app, host="0.0.0.0", port=port, reload=True)

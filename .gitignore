@@ -34,3 +34,18 @@ dist-ssr
 # Confedential
 .env
 .env.local
+
+# Python
+backend/venv/
+backend/__pycache__/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Models
+*.pt
+*.onnx
+
+# OS
+.DS_Store
+Thumbs.db
