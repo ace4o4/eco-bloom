@@ -1,4 +1,4 @@
-# Storage Bucket Setup - Quick Guide
+# Storage Bucket Setup -  Guide
 
 ## Problem:
 Getting "row-level security policy" error even when logged in?
