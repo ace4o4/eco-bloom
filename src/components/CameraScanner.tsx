@@ -121,6 +121,9 @@ const CameraScanner = ({ onCapture, onCancel }: CameraScannerProps) => {
                 const imageData = canvas.toDataURL("image/jpeg", 0.8);
                 setCapturedImage(imageData);
                 stopCamera();
+                
+                // Auto-propagate image immediately (result comes later)
+                onCapture(imageData, undefined);
 
                 // Trigger AI analysis
                 await analyzeImage(imageData);
@@ -134,10 +137,13 @@ const CameraScanner = ({ onCapture, onCancel }: CameraScannerProps) => {
         setError("");
 
         try {
-            console.log("🤖 Starting YOLOv5 analysis...");
+            console.log("🤖 Starting Florence-2 analysis...");
             const result = await analyzeMaterialImage(imageData);
             setAiResult(result);
             console.log("✅ Analysis complete:", result);
+            
+            // Auto-propagate to parent immediately
+            onCapture(imageData, result);
         } catch (err) {
             console.error("AI analysis failed:", err);
             const errorMsg = err instanceof Error ? err.message : "Unknown error";
@@ -168,6 +174,9 @@ const CameraScanner = ({ onCapture, onCancel }: CameraScannerProps) => {
                 const result = event.target?.result as string;
                 setCapturedImage(result);
                 setMode("upload");
+                
+                // Auto-propagate image immediately
+                onCapture(result, undefined);
 
                 // Trigger AI analysis
                 await analyzeImage(result);
@@ -342,7 +351,7 @@ const CameraScanner = ({ onCapture, onCancel }: CameraScannerProps) => {
                         >
                             <Loader2 className="w-5 h-5 text-primary animate-spin" />
                             <div>
-                                <p className="font-medium text-sm">Analyzing with YOLOv5...</p>
+                                <p className="font-medium text-sm">Analyzing with Florence-2 AI...</p>
                                 <p className="text-xs text-muted-foreground">Detecting objects and materials</p>
                             </div>
                         </motion.div>
@@ -379,11 +388,7 @@ const CameraScanner = ({ onCapture, onCancel }: CameraScannerProps) => {
                                     <p className="font-medium">{(aiResult.confidence * 100).toFixed(0)}%</p>
                                 </div>
                             </div>
-                            {aiResult.estimatedWeight && (
-                                <div className="text-xs text-muted-foreground pt-2 border-t border-white/10">
-                                    📦 Est. Weight: {aiResult.estimatedWeight}
-                                </div>
-                            )}
+
                         </motion.div>
                     )}
 
@@ -392,10 +397,7 @@ const CameraScanner = ({ onCapture, onCancel }: CameraScannerProps) => {
                             <RotateCcw className="w-4 h-4 mr-2" />
                             Retake
                         </Button>
-                        <Button variant="eco" onClick={confirmImage} className="flex-1">
-                            <Check className="w-4 h-4 mr-2" />
-                            Use This Photo
-                        </Button>
+                        {/* "Use This Photo" removed as per request. Data is auto-saved. */}
                     </div>
                 </motion.div>
             )}

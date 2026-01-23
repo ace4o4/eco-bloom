@@ -8,7 +8,7 @@ import {
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
 import CameraScanner from "@/components/CameraScanner";
-import SearchInterface from "@/components/SearchInterface";
+import SearchInterface, { SearchFilters } from "@/components/SearchInterface";
 import ListingsBrowse from "@/components/ListingsBrowse";
 import ContactDialog from "@/components/ContactDialog";
 import type { Listing as UIListing } from "@/components/ListingsBrowse";
@@ -51,9 +51,18 @@ const getCategorySlug = (category: string): string => {
   return categoryMap[category?.toLowerCase()] || 'organic';
 };
 
+interface MarketPriceData {
+  min: number;
+  max: number;
+  avg: number;
+  unit: string;
+  recommended_min: number;
+}
+
 const PlantMatch = () => {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
+  const [marketPrice, setMarketPrice] = useState<MarketPriceData | null>(null);
   const [formData, setFormData] = useState({
     type: "",
     imageData: "",
@@ -61,6 +70,7 @@ const PlantMatch = () => {
     description: "",
     category: "",
     quantity: "",
+    price: "",
     unit: "units",
     location: "",
     frequency: "one-time",
@@ -143,6 +153,7 @@ const PlantMatch = () => {
         description: formData.description,
         category: getCategorySlug(formData.category), // Map to slug
         quantity: formData.quantity,
+        price: formData.price ? parseFloat(formData.price) : null,
         unit: formData.unit,
         frequency: formData.frequency,
         image_url: imageUrl,
@@ -167,7 +178,7 @@ const PlantMatch = () => {
   };
 
   // Seeking flow handlers
-  const handleSearch = async (filters: SearchFilters) => {
+  const handleSearch = async (filters: any) => {
     setIsLoadingListings(true);
 
     try {
@@ -202,12 +213,16 @@ const PlantMatch = () => {
 
         return {
           id: listing.id!,
+          type: listing.type || 'offering', // Include type
           title: listing.title,
-          description: listing.description,
+          description: listing.description || '',
           category: listing.category,
-          quantity: listing.quantity,
-          unit: listing.unit,
+          quantity: listing.quantity || '0',
+          unit: listing.unit || 'units',
+          unit: listing.unit || 'units',
+          price: listing.price, // Include price
           imageData: listing.image_url || '',
+          user_id: listing.user_id, // Pass user_id for chat
           location: {
             address: listing.location_address || 'Location not specified',
             distance,
@@ -293,12 +308,12 @@ const PlantMatch = () => {
                 );
               })}
             </div>
-            <div className="h-2 bg-muted rounded-full overflow-hidden">
+            <div className="h-3 bg-muted/50 rounded-full overflow-hidden border border-border/50 shadow-inner">
               <motion.div
-                className="h-full bg-gradient-to-r from-primary via-secondary to-electric"
+                className="h-full bg-gradient-to-r from-primary via-secondary to-electric shadow-[0_0_10px_rgba(34,197,94,0.5)]"
                 initial={{ width: "0%" }}
                 animate={{ width: `${(step / 5) * 100}%` }}
-                transition={{ duration: 0.3 }}
+                transition={{ duration: 0.5, ease: "circOut" }}
               />
             </div>
           </div>
@@ -324,7 +339,10 @@ const PlantMatch = () => {
                   ].map((option) => (
                     <button
                       key={option.value}
-                      onClick={() => setFormData({ ...formData, type: option.value as "offering" | "seeking" })}
+                      onClick={() => {
+                        setFormData({ ...formData, type: option.value as "offering" | "seeking" });
+                        setStep(2);
+                      }}
                       className={`p-6 rounded-2xl border-2 transition-all duration-300 text-left group hover:scale-[1.02] ${formData.type === option.value
                         ? "border-primary bg-primary/10 shadow-neon"
                         : "border-border bg-card/50 hover:border-primary/50"
@@ -358,18 +376,17 @@ const PlantMatch = () => {
 
                   // Auto-fill from AI if available
                   if (aiResult) {
-                    console.log("🤖 Auto-filling form with YOLOv5 results:", aiResult);
+                    console.log("🤖 Auto-filling form with Florence-2 results:", aiResult);
                     setFormData(prev => ({
                       ...prev,
                       imageData,
-                      title: aiResult.title,
-                      description: aiResult.description,
-                      quantity: aiResult.estimatedWeight?.replace(/[^\d.]/g, '') || "", // Extract number
-                      unit: aiResult.estimatedWeight?.includes('kg') ? 'kg' :
-                        aiResult.estimatedWeight?.includes('ton') ? 'tons' :
-                          aiResult.estimatedWeight?.includes('liter') || aiResult.estimatedWeight?.includes('L') ? 'liters' :
-                            'units', // Default to 'units' for grams, pieces, etc
+                      title: aiResult.primary_detection?.title || aiResult.title,
+                      description: aiResult.primary_detection?.description || aiResult.description,
                     }));
+                    
+                    if (aiResult.primary_detection?.market_price) {
+                      setMarketPrice(aiResult.primary_detection.market_price);
+                    }
                   }
                 }}
                 onCancel={() => setStep(1)}
@@ -381,6 +398,7 @@ const PlantMatch = () => {
               <SearchInterface
                 onSearch={handleSearch}
                 onBack={() => setStep(1)}
+                isLoading={isLoadingListings}
               />
             )}
 
@@ -474,11 +492,56 @@ const PlantMatch = () => {
                     onChange={(e) => setFormData({ ...formData, frequency: e.target.value })}
                     className="eco-select w-full"
                   >
-                    <option value="one-time">One-time</option>
-                    <option value="weekly">Weekly</option>
-                    <option value="monthly">Monthly</option>
-                    <option value="ongoing">Ongoing</option>
+                    <option value="electronics">Electronics</option>
+                    <option value="textiles">Textiles</option>
+                    <option value="organic">Organic</option>
+                    <option value="rubber">Rubber</option>
+                    <option value="wood">Wood</option>
+                    <option value="other">Other</option>
                   </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium mb-2">Price (Optional)</label>
+                  <div className="relative">
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                    <input
+                      type="number"
+                      value={formData.price}
+                      onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                      placeholder="0.00"
+                      className="eco-input w-full pl-8"
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">Leave empty if offering for free</p>
+                  
+                  {marketPrice && (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="mt-4 p-3 bg-secondary/10 border border-secondary/20 rounded-xl"
+                    >
+                      <h4 className="flex items-center gap-2 text-sm font-semibold text-secondary mb-2">
+                        <Leaf className="w-4 h-4" />
+                        Market Price Estimate
+                      </h4>
+                      <div className="space-y-1 text-sm text-muted-foreground">
+                        <div className="flex justify-between">
+                          <span>Market Rate:</span>
+                          <span className="font-medium text-foreground">₹{marketPrice.min} - ₹{marketPrice.max} / {marketPrice.unit}</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Recommended Bargain (60%):</span>
+                          <span className="font-medium text-primary">Min ₹{marketPrice.recommended_min.toFixed(2)} / {marketPrice.unit}</span>
+                        </div>
+                        <p className="text-xs italic mt-2 opacity-80">
+                          *Fair pricing helps ensure quick pickups. We recommend listing at approx. 60% of market value.
+                        </p>
+                      </div>
+                    </motion.div>
+                  )}
                 </div>
               </div>
             )}
@@ -495,14 +558,33 @@ const PlantMatch = () => {
                     <MapPin className="w-4 h-4 inline mr-1" />
                     Location / Address
                   </label>
-                  <input
-                    type="text"
-                    value={formData.location}
-                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
-                    placeholder="City, neighborhood, or full address"
-                    className="eco-input w-full"
-                    maxLength={100}
-                  />
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={formData.location}
+                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                      placeholder="City, neighborhood, or full address"
+                      className="eco-input w-full pr-10"
+                      maxLength={100}
+                    />
+                    <button
+                      onClick={async () => {
+                        try {
+                            const location = await getCurrentLocation();
+                            if (location.address) {
+                                setFormData({ ...formData, location: location.address });
+                            }
+                        } catch (error) {
+                            console.error("Failed to get location", error);
+                            alert("Could not detect location. Please enter manually.");
+                        }
+                      }}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-muted text-primary transition-colors"
+                      title="Use my current location"
+                    >
+                      <MapPin className="w-4 h-4" />
+                    </button>
+                  </div>
                   {errors.location && <p className="text-destructive text-sm mt-1">{errors.location}</p>}
                   <p className="text-xs text-muted-foreground mt-2">
                     <span className="inline-flex items-center gap-1">We prioritize local matches to minimize carbon footprint <Leaf className="w-3.5 h-3.5 inline" /></span>
@@ -540,6 +622,11 @@ const PlantMatch = () => {
                         {formData.frequency}
                       </span>
                     </div>
+                    {formData.price && (
+                      <div className="mt-2 text-sm font-semibold text-primary">
+                         ${parseFloat(formData.price).toFixed(2)}
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -566,7 +653,7 @@ const PlantMatch = () => {
                   <Button variant="eco" onClick={() => navigate("/scorecard")}>
                     View Your Impact
                   </Button>
-                  <Button variant="outline" onClick={() => { setStep(1); setFormData({ type: "", imageData: "", title: "", description: "", category: "", quantity: "", unit: "units", location: "", frequency: "one-time" }); }}>
+                  <Button variant="outline" onClick={() => { setStep(1); setFormData({ type: "", imageData: "", title: "", description: "", category: "", quantity: "", price: "", unit: "units", location: "", frequency: "one-time" }); }}>
                     Plant Another Match
                   </Button>
                 </div>
@@ -588,12 +675,12 @@ const PlantMatch = () => {
                   </Button>
                 )}
 
-                {step < 4 ? (
+                {step < 4 && step !== 1 && formData.type !== "seeking" ? (
                   <Button variant="eco" onClick={nextStep}>
                     Continue
                     <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
-                ) : (
+                ) : step === 4 ? (
                   <Button
                     variant="hero"
                     onClick={handleSubmit}
@@ -611,20 +698,20 @@ const PlantMatch = () => {
                       </>
                     )}
                   </Button>
-                )}
+                ) : null}
               </div>
             )}
           </motion.div>
         </div>
-      </main >
+      </main>
 
       {/* Contact Dialog */}
-      < ContactDialog
+      <ContactDialog
         listing={selectedListing}
         isOpen={showContactDialog}
         onClose={handleCloseContactDialog}
       />
-    </div >
+    </div>
   );
 };
 

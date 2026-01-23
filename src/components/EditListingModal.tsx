@@ -29,6 +29,7 @@ const EditListingModal = ({
         quantity: "",
         unit: "units",
         frequency: "one-time",
+        location: "",
     });
     const [isSaving, setIsSaving] = useState(false);
     const [error, setError] = useState("");
@@ -41,6 +42,7 @@ const EditListingModal = ({
                 quantity: listing.quantity || "",
                 unit: listing.unit || "units",
                 frequency: listing.frequency || "one-time",
+                location: listing.location_address || "",
             });
         }
     }, [listing]);
@@ -60,6 +62,7 @@ const EditListingModal = ({
                     quantity: parseFloat(formData.quantity),
                     unit: formData.unit,
                     frequency: formData.frequency,
+                    location_address: formData.location, // Map to DB column
                     updated_at: new Date().toISOString(),
                 })
                 .eq('id', listing.id);
@@ -157,6 +160,53 @@ const EditListingModal = ({
                             <option value="monthly">Monthly</option>
                             <option value="ongoing">Ongoing</option>
                         </select>
+                    </div>
+
+                    {/* Location */}
+                    <div>
+                        <label className="block text-sm font-medium mb-2">Location</label>
+                         <div className="relative">
+                            <input
+                                type="text"
+                                value={formData.location}
+                                onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                                placeholder="Enter location..."
+                                className="eco-input w-full pr-10"
+                            />
+                            <button
+                                onClick={async () => {
+                                    try {
+                                        // Dynamic import to avoid circular dependencies if any
+                                        const { getCurrentLocation } = await import('@/lib/geolocation');
+                                        const location = await getCurrentLocation();
+                                        if (location.address) {
+                                            setFormData({ ...formData, location: location.address });
+                                        }
+                                    } catch (error) {
+                                        console.error("Failed to get location", error);
+                                        // silent fail or small toast
+                                    }
+                                }}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-muted text-primary transition-colors"
+                                type="button"
+                                title="Use my current location"
+                            >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                >
+                                    <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+                                    <circle cx="12" cy="10" r="3" />
+                                </svg>
+                            </button>
+                        </div>
                     </div>
                 </div>
 

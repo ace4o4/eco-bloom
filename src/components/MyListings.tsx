@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
-import { Edit2, Trash2, Package, MapPin, Calendar } from "lucide-react";
+import { Link } from "react-router-dom";
+import { Edit2, Trash2, Package, MapPin, Calendar, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/lib/supabase";
@@ -158,6 +159,17 @@ const MyListings = ({ onEdit, onDelete }: MyListingsProps) => {
 
                                 {/* Actions */}
                                 <div className="flex gap-2 pt-2">
+                                     <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        asChild
+                                        className="flex-1"
+                                    >
+                                        <Link to={`/listing/${listing.id}`}>
+                                            <Eye className="w-4 h-4 mr-2" />
+                                            View
+                                        </Link>
+                                    </Button>
                                     <Button
                                         variant="outline"
                                         size="sm"

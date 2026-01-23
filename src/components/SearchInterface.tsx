@@ -2,8 +2,9 @@ import { useState } from "react";
 import { Search, MapPin, Filter, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { getCurrentLocation } from "@/lib/geolocation";
 
-interface SearchFilters {
+export interface SearchFilters {
   query: string;
   category: string;
   location: string;
@@ -13,6 +14,7 @@ interface SearchFilters {
 interface SearchInterfaceProps {
   onSearch: (filters: SearchFilters) => void;
   onBack?: () => void;
+  isLoading?: boolean;
 }
 
 const categories = [
@@ -24,6 +26,8 @@ const categories = [
   { value: "electronics", label: "Electronics" },
   { value: "textiles", label: "Textiles" },
   { value: "organic", label: "Organic" },
+  { value: "rubber", label: "Rubber" },
+  { value: "wood", label: "Wood" },
   { value: "other", label: "Other" },
 ];
 
@@ -33,9 +37,10 @@ const radiusOptions = [
   { value: 25, label: "25 km" },
   { value: 50, label: "50 km" },
   { value: 100, label: "100 km" },
+  { value: "None", label: "None" },
 ];
 
-const SearchInterface = ({ onSearch, onBack }: SearchInterfaceProps) => {
+const SearchInterface = ({ onSearch, onBack, isLoading }: SearchInterfaceProps) => {
   const [filters, setFilters] = useState<SearchFilters>({
     query: "",
     category: "all",
@@ -114,8 +119,26 @@ const SearchInterface = ({ onSearch, onBack }: SearchInterfaceProps) => {
               placeholder="Enter city..."
               value={filters.location}
               onChange={(e) => setFilters({ ...filters, location: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl border-2 border-border bg-background focus:border-primary focus:outline-none transition-colors"
+              className="w-full pl-4 pr-10 py-3 rounded-xl border-2 border-border bg-background focus:border-primary focus:outline-none transition-colors"
             />
+            <button
+              onClick={async () => {
+                try {
+                    // Show loading state if possible or just use try-catch
+                    const location = await getCurrentLocation();
+                    if (location.address) {
+                        setFilters({ ...filters, location: location.address });
+                    }
+                } catch (error) {
+                    console.error("Failed to get location", error);
+                    alert("Could not detect location. Please enter manually.");
+                }
+              }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-muted text-primary transition-colors"
+              title="Use my current location"
+            >
+              <MapPin className="w-4 h-4" />
+            </button>
           </div>
 
           <div>
@@ -140,9 +163,19 @@ const SearchInterface = ({ onSearch, onBack }: SearchInterfaceProps) => {
           onClick={handleSearch}
           className="w-full group"
           size="lg"
+          disabled={isLoading}
         >
-          <Sparkles className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform" />
-          Search Available Materials
+          {isLoading ? (
+            <div className="flex items-center gap-2">
+              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              Searching...
+            </div>
+          ) : (
+            <>
+              <Sparkles className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform" />
+              Search Available Materials
+            </>
+          )}
         </Button>
 
         {/* Back Button */}

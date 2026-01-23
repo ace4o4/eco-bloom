@@ -25,6 +25,7 @@ export interface Listing {
     contact_name?: string;
     contact_email?: string;
     contact_phone?: string;
+    price?: number | null;
 }
 
 export interface SearchFilters {
@@ -75,6 +76,7 @@ export async function createListing(listing: Listing): Promise<Listing> {
         title: listing.title,
         description: listing.description,
         quantity: parseFloat(listing.quantity),
+        price: listing.price ? parseFloat(listing.price.toString()) : null,
         unit: listing.unit,
         frequency: listing.frequency || 'one-time',
         location: listing.location_address || '',
@@ -110,25 +112,35 @@ export async function createListing(listing: Listing): Promise<Listing> {
  * Fetch listings with filters
  */
 export async function fetchListings(filters: SearchFilters = {}): Promise<Listing[]> {
-    let query = supabase
+    let query: any = supabase
         .from('listings')
-        .select(`
+    // Category filter - Use inner join to filter by related table
+    if (filters.category && filters.category !== 'all') {
+        query = query
+            .select(`
+                *,
+                categories!inner (
+                    slug
+                )
+            `)
+            .eq('categories.slug', filters.category);
+    } else {
+        // Normal select if not filtering by category
+        query = query.select(`
             *,
             categories (
                 slug
             )
-        `)
+        `);
+    }
+
+    query = query
         .eq('type', 'offering')
         .eq('status', 'active');
 
     // Text search
     if (filters.query) {
         query = query.or(`title.ilike.%${filters.query}%,description.ilike.%${filters.query}%`);
-    }
-
-    // Category filter
-    if (filters.category && filters.category !== 'all') {
-        query = query.eq('category', filters.category);
     }
 
     // Location-based search
@@ -271,4 +283,10 @@ export async function getMyListings(): Promise<Listing[]> {
     }
 
     return data || [];
+}
+export interface SearchFilters {
+    query?: string;
+    category?: string;
+    location?: { lat: number; lng: number } | null;
+    radius?: number | null;
 }

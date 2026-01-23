@@ -1,19 +1,23 @@
 import { motion } from "framer-motion";
-import { MapPin, Package, Mail, Phone, User } from "lucide-react";
+import { Link } from "react-router-dom";
+import { MapPin, Package, Mail, Phone, User, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export interface Listing {
     id: string;
+    type: 'offering' | 'seeking';
     title: string;
     description: string;
     category: string;
     quantity: string;
     unit: string;
+    price?: number | null;
     imageData?: string;
     location: {
         address: string;
         distance?: number;
     };
+    user_id?: string; // Add user_id for chat
     user: {
         name?: string;
         email?: string;
@@ -79,78 +83,78 @@ const ListingsBrowse = ({ listings, onContact, isLoading }: ListingsBrowseProps)
             </div>
 
             {/* Listings Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {listings.map((listing, index) => (
                     <motion.div
                         key={listing.id}
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.1 }}
-                        className="group rounded-2xl border-2 border-border bg-card overflow-hidden hover:border-primary/50 hover:shadow-lg transition-all duration-300"
+                        className="group relative flex flex-col rounded-3xl border border-border/50 bg-gradient-to-b from-card to-card/50 overflow-hidden hover:border-primary/50 hover:shadow-neon transition-all duration-300 transform hover:-translate-y-1"
                     >
-                        {/* Image */}
-                        {listing.imageData ? (
-                            <div className="aspect-video bg-muted overflow-hidden">
+                        {/* Image Container */}
+                        <div className="relative aspect-[4/3] overflow-hidden">
+                            {listing.imageData ? (
                                 <img
                                     src={listing.imageData}
                                     alt={listing.title}
-                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                                 />
-                            </div>
-                        ) : (
-                            <div className="aspect-video bg-gradient-to-br from-primary/10 to-secondary/10 flex items-center justify-center">
-                                <Package className="w-12 h-12 text-muted-foreground" />
-                            </div>
-                        )}
+                            ) : (
+                                <div className="w-full h-full bg-gradient-to-br from-primary/5 to-secondary/5 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                                    <Package className="w-16 h-16 text-primary/20" />
+                                </div>
+                            )}
 
-                        {/* Content */}
-                        <div className="p-4 space-y-3">
-                            {/* Category Badge */}
-                            <div className="flex items-center gap-2">
-                                <span
-                                    className={`px-3 py-1 rounded-full text-xs font-medium border ${categoryColors[listing.category] || categoryColors.other
-                                        }`}
-                                >
-                                    {listing.category ?
-                                        listing.category.charAt(0).toUpperCase() + listing.category.slice(1)
-                                        : 'Other'}
+                            {/* Price Badge */}
+                            <div className="absolute top-4 right-4">
+                                <div className="px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 shadow-lg text-white font-semibold text-sm">
+                                    {listing.price ? `$${listing.price}` : "Free"}
+                                </div>
+                            </div>
+
+                            {/* Category Overlay */}
+                            <div className="absolute top-4 left-4">
+                                <span className={`px-3 py-1.5 rounded-full text-xs font-semibold uppercase tracking-wider backdrop-blur-md ${categoryColors[listing.category]?.replace("text-", "text-black bg-white/80 border-transparent ") || "bg-white/80 text-black"}`}>
+                                    {listing.category || 'Other'}
                                 </span>
                             </div>
+                        </div>
 
-                            {/* Title */}
-                            <h3 className="font-semibold text-lg line-clamp-1">{listing.title}</h3>
+                        {/* Content */}
+                        <div className="flex flex-col flex-1 p-5 space-y-4">
+                            <div>
+                                <h3 className="font-bold text-lg text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+                                    {listing.title}
+                                </h3>
+                                <div className="flex items-center gap-2 text-xs text-muted-foreground mt-2">
+                                    <span className="flex items-center gap-1 bg-muted/50 px-2 py-1 rounded-md">
+                                        <Package className="w-3.5 h-3.5" />
+                                        {listing.quantity} {listing.unit}
+                                    </span>
+                                    {listing.location.distance && (
+                                        <span className="flex items-center gap-1 bg-muted/50 px-2 py-1 rounded-md">
+                                            <MapPin className="w-3.5 h-3.5" />
+                                            {listing.location.distance}km
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
 
-                            {/* Description */}
-                            <p className="text-sm text-muted-foreground line-clamp-2">
+                            <p className="text-sm text-muted-foreground line-clamp-2 leading-relaxed">
                                 {listing.description}
                             </p>
 
-                            {/* Details */}
-                            <div className="space-y-2 text-sm">
-                                <div className="flex items-center gap-2 text-muted-foreground">
-                                    <Package className="w-4 h-4" />
-                                    <span>
-                                        {listing.quantity} {listing.unit}
-                                    </span>
-                                </div>
-                                <div className="flex items-center gap-2 text-muted-foreground">
-                                    <MapPin className="w-4 h-4" />
-                                    <span className="line-clamp-1">
-                                        {listing.location.address}
-                                        {listing.location.distance && ` (${listing.location.distance}km away)`}
-                                    </span>
-                                </div>
+                            <div className="mt-auto pt-4 border-t border-border/50">
+                                <Button
+                                    variant="eco"
+                                    className="w-full shadow-md group-hover:shadow-lg transition-all"
+                                    onClick={() => onContact(listing)}
+                                >
+                                    View Details
+                                    <Eye className="w-4 h-4 ml-2 opacity-70 group-hover:opacity-100 transition-opacity" />
+                                </Button>
                             </div>
-
-                            {/* Contact Button */}
-                            <Button
-                                variant="eco"
-                                onClick={() => onContact(listing)}
-                                className="w-full group/btn"
-                            >
-                                <Mail className="w-4 h-4 mr-2 group-hover/btn:rotate-12 transition-transform" />
-                                Contact Seller
-                            </Button>
                         </div>
                     </motion.div>
                 ))}

@@ -1,7 +1,7 @@
 import { motion } from "framer-motion";
 import { Leaf, Menu, X, LogOut, User as UserIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import AuthModal from "@/components/AuthModal";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,6 +11,36 @@ const Navbar = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const { user, signOut } = useAuth();
   const location = useLocation();
+  const [hasUnread, setHasUnread] = useState(false);
+  
+  // Don't show the red dot if we are already on the messages page
+  const showUnreadDot = hasUnread && !location.pathname.startsWith('/messages');
+
+  useEffect(() => {
+     if (!user) return;
+     import("@/lib/supabase-chat").then(({ getUnreadCount }) => {
+        const checkUnread = () => getUnreadCount().then(count => setHasUnread(count > 0));
+        
+        checkUnread(); 
+        
+        // Listen for message events
+        // Wrap in setTimeout to avoid "Cannot update during render" warning if event fires synchronously
+        const updateUnread = () => setTimeout(() => checkUnread(), 0);
+        const clearUnread = () => setTimeout(() => setHasUnread(false), 0);
+
+        window.addEventListener('messages-read', updateUnread); // Refreshes when reading messages
+        window.addEventListener('clear-navbar-unread', clearUnread); // Optimistic clear
+        
+        // Simple polling for new messages (every 15s)
+        const interval = setInterval(checkUnread, 15000);
+        
+        return () => {
+            clearInterval(interval);
+            window.removeEventListener('messages-read', updateUnread);
+            window.removeEventListener('clear-navbar-unread', clearUnread);
+        };
+     });
+  }, [user, location.pathname]);
 
   const navLinks = [
     { name: "How It Works", href: "/#how-it-works" },
@@ -84,6 +114,16 @@ const Navbar = () => {
               >
                 Sign In
               </Button>
+            )}
+            {user && (
+              <Link to="/messages" className="relative group">
+                <Button variant="ghost" size="sm">
+                   Messages
+                </Button>
+                {showUnreadDot && (
+                   <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-red-500 rounded-full border-2 border-background animate-pulse" />
+                )}
+              </Link>
             )}
             {user ? (
               <Link to="/dashboard">
@@ -161,6 +201,13 @@ const Navbar = () => {
                 >
                   Sign In
                 </Button>
+              )}
+              {user && (
+                 <Link to="/messages" className="block">
+                   <Button variant="ghost" className="w-full justify-center">
+                     Messages
+                   </Button>
+                 </Link>
               )}
               {user ? (
                 <Link to="/dashboard" className="block">

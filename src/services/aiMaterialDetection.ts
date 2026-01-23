@@ -13,6 +13,17 @@ export interface MaterialDetectionResult {
     suggestedCategory: string;
     confidence: number;
     estimatedWeight?: string;
+    primary_detection?: {
+        title: string;
+        description: string;
+        market_price?: {
+            min: number;
+            max: number;
+            avg: number;
+            unit: string;
+            recommended_min: number;
+        };
+    };
 }
 
 /**

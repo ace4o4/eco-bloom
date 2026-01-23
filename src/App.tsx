@@ -11,6 +11,8 @@ import PlantMatch from "./pages/PlantMatch";
 import Scorecard from "./pages/Scorecard";
 import EcoMap from "./pages/EcoMap";
 import Leaderboard from "./pages/Leaderboard";
+import ListingDetails from "./pages/ListingDetails";
+import Messages from "./pages/Messages";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +35,12 @@ const App = () => (
             <Route path="/scorecard" element={<Scorecard />} />
             <Route path="/eco-map" element={<EcoMap />} />
             <Route path="/leaderboard" element={<Leaderboard />} />
+            <Route path="/listing/:id" element={<ListingDetails />} />
+            <Route path="/messages" element={
+              <ProtectedRoute>
+                <Messages />
+              </ProtectedRoute>
+            } />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>

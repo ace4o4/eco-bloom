@@ -80,7 +80,7 @@ const EcoMapVisualization = () => {
           />
 
           {/* SVG Connections */}
-          <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none">
+          <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" viewBox="0 0 100 100">
             <defs>
               <linearGradient id="connectionGradient" x1="0%" y1="0%" x2="100%" y2="0%">
                 <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity="0.3" />
@@ -97,9 +97,9 @@ const EcoMapVisualization = () => {
               return (
                 <motion.path
                   key={`${conn.from}-${conn.to}`}
-                  d={`M ${fromNode.position.x}% ${fromNode.position.y}% 
-                      Q ${(fromNode.position.x + toNode.position.x) / 2}% ${Math.min(fromNode.position.y, toNode.position.y) - 10}%
-                      ${toNode.position.x}% ${toNode.position.y}%`}
+                  d={`M ${fromNode.position.x} ${fromNode.position.y} 
+                      Q ${(fromNode.position.x + toNode.position.x) / 2} ${Math.min(fromNode.position.y, toNode.position.y) - 10}
+                      ${toNode.position.x} ${toNode.position.y}`}
                   fill="none"
                   stroke="url(#connectionGradient)"
                   strokeWidth="3"

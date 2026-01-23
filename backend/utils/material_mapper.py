@@ -40,6 +40,20 @@ MATERIAL_CATEGORIES = {
     'pizza': 'organic',
     'donut': 'organic',
     'cake': 'organic',
+    'donut': 'organic',
+    'cake': 'organic',
+    # New Categories
+    'tire': 'rubber',
+    'car tire': 'rubber',
+    'truck tire': 'rubber',
+    'wheel': 'rubber',
+    'wood': 'wood',
+    'plank': 'wood',
+    'table': 'wood',  # Assuming wooden table
+    'chair': 'wood',  # Changed from textiles to wood as furniture is often wood/plastic/metal mix but wood is common scrap
+    'bench': 'wood',
+    'door': 'wood',
+    'cabinet': 'wood',
 }
 
 # Recyclable items
@@ -47,7 +61,9 @@ RECYCLABLE_ITEMS = {
     'bottle', 'cup', 'bowl', 'book', 'cell phone', 
     'laptop', 'keyboard', 'mouse', 'scissors', 'spoon', 
     'fork', 'knife', 'vase', 'wine glass', 'backpack',
-    'handbag', 'suitcase', 'tv', 'remote'
+    'handbag', 'suitcase', 'tv', 'remote',
+    # New Recyclables
+    'tire', 'car tire', 'truck tire', 'wheel', 'wood', 'plank', 'table', 'chair', 'bench', 'door', 'cabinet'
 }
 
 # Weight estimates (in grams)
@@ -58,6 +74,9 @@ WEIGHT_ESTIMATES = {
     'cell phone': '150g',
     'laptop': '2kg',
     'keyboard': '800g',
+    'tire': '10kg',
+    'car tire': '10kg',
+    'wood': '5kg',
     'mouse': '100g',
     'remote': '120g',
     'book': '500g',
@@ -127,10 +146,11 @@ def get_material_info(detected_class: str, confidence: float) -> dict:
 
 def format_detection_response(detections: list) -> dict:
     """
-    Format YOLOv5 detections into response format
+    Format YOLOv5/Florence-2 detections into response format
+    Aggregates multiple detections into a summary.
     
     Args:
-        detections: List of detection results from YOLOv5
+        detections: List of detection results
     
     Returns:
         Formatted response dictionary
