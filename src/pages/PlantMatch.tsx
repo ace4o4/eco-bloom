@@ -19,6 +19,7 @@ import {
   fetchListings,
   uploadListingImageFromBase64,
   type Listing as DBListing,
+  type SearchFilters as DBSearchFilters,
 } from "@/lib/supabase-listings";
 import { getCurrentLocation, calculateDistance } from "@/lib/geolocation";
 
@@ -177,29 +178,36 @@ const PlantMatch = () => {
     }
   };
 
-  // Seeking flow handlers
-  const handleSearch = async (filters: any) => {
+  const handleSearch = async (filters: SearchFilters) => {
     setIsLoadingListings(true);
 
     try {
       console.log('🔍 Searching listings with filters:', filters);
 
-      // Get user location if not provided
-      let userLocation;
+      // Prepare API filters
+      const apiFilters: DBSearchFilters = {
+          query: filters.query,
+          category: filters.category,
+          radius: filters.radius,
+      };
+
+      // Get user location if logic requires (e.g. if location string is present or just use current)
+      // Original logic seemed to rely on current location for radius search
       if (filters.location && filters.radius) {
         try {
           const location = await getCurrentLocation();
-          userLocation = location.coords;
-          filters.location = userLocation;
+          apiFilters.location = location.coords;
         } catch (error) {
           console.log('⚠️ Location not available, searching without distance filter');
-          filters.location = null;
-          filters.radius = null;
+          apiFilters.location = undefined;
+          apiFilters.radius = undefined;
         }
       }
 
       // Fetch real listings from Supabase
-      const data = await fetchListings(filters);
+      const data = await fetchListings(apiFilters);
+
+      const userLocation = apiFilters.location;
 
       // Calculate distances if we have user location
       const listingsWithDistance: UIListing[] = data.map(listing => {
@@ -219,7 +227,7 @@ const PlantMatch = () => {
           category: listing.category,
           quantity: listing.quantity || '0',
           unit: listing.unit || 'units',
-          unit: listing.unit || 'units',
+
           price: listing.price, // Include price
           imageData: listing.image_url || '',
           user_id: listing.user_id, // Pass user_id for chat

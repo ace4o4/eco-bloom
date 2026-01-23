@@ -93,15 +93,15 @@ export async function getConversations(): Promise<Conversation[]> {
     
     const unreadMap: Record<string, number> = {};
     if (unreadMessages) {
-        unreadMessages.forEach((msg: any) => {
+        unreadMessages.forEach((msg: { conversation_id: string }) => {
             unreadMap[msg.conversation_id] = (unreadMap[msg.conversation_id] || 0) + 1;
         });
     }
 
-    return data.filter((conv: any) => {
+    return data.filter((conv: Conversation & { deleted_by_buyer: boolean; deleted_by_seller: boolean }) => {
         const isBuyer = conv.buyer_id === user.id;
         return isBuyer ? !conv.deleted_by_buyer : !conv.deleted_by_seller;
-    }).map((conv: any) => {
+    }).map((conv: Conversation & { listing?: { contact_name?: string } }) => {
         const isBuyer = conv.buyer_id === user.id;
         // If I am buyer, other user is seller (use listing.contact_name)
         // If I am seller, other user is buyer (use conv.buyer_name)
@@ -131,7 +131,7 @@ export async function deleteConversation(conversationId: string): Promise<void> 
     const { data: conv } = await supabase.from('conversations').select('buyer_id, seller_id').eq('id', conversationId).single();
     if (!conv) return;
 
-    const updates: any = {};
+    const updates: { deleted_by_buyer?: boolean; deleted_by_seller?: boolean } = {};
     if (user.id === conv.buyer_id) updates.deleted_by_buyer = true;
     else if (user.id === conv.seller_id) updates.deleted_by_seller = true;
 
@@ -259,8 +259,27 @@ export async function getUnreadCount(): Promise<number> {
     if (error || !unreadMessages) return 0;
 
     // Filter out messages from conversations the user has deleted
-    const validUnreadMessages = unreadMessages.filter((msg: any) => {
-        const conv = msg.conversation;
+    // Define a type for the joined message data
+    type UnreadMessageWithConv = {
+        conversation: {
+            buyer_id: string;
+            seller_id: string;
+            deleted_by_buyer: boolean;
+            deleted_by_seller: boolean;
+        } | {
+            buyer_id: string;
+            seller_id: string;
+            deleted_by_buyer: boolean;
+            deleted_by_seller: boolean;
+        }[];
+    };
+
+    const validUnreadMessages = unreadMessages.filter((msg: UnreadMessageWithConv) => {
+        const convData = msg.conversation;
+        const conv = Array.isArray(convData) ? convData[0] : convData;
+        
+        if (!conv) return false;
+
         const isBuyer = conv.buyer_id === user.id;
         const isSeller = conv.seller_id === user.id;
 

@@ -3,6 +3,7 @@ import { motion } from "framer-motion";
 import Navbar from "@/components/Navbar";
 import { getConversations, getMessages, sendMessage, subscribeToMessages, markMessagesAsRead, Conversation, ChatMessage } from "@/lib/supabase-chat";
 import { supabase } from "@/lib/supabase";
+import { RealtimeChannel } from "@supabase/supabase-js";
 import ConversationList from "@/components/chat/ConversationList";
 import ChatWindow from "@/components/chat/ChatWindow";
 
@@ -34,7 +35,7 @@ const Messages = () => {
              }
         };
         loadInitialData();
-    }, []);
+    }, [activeId]);
 
     // Instant handler for clicking a conversation
     const handleSelectConversation = (id: string) => {
@@ -59,7 +60,7 @@ const Messages = () => {
     useEffect(() => {
         if (!activeId) return;
 
-        let subscription: any;
+        let subscription: RealtimeChannel;
 
         const loadMessages = async () => {
              try {
@@ -101,7 +102,7 @@ const Messages = () => {
         return () => {
             if (subscription) subscription.unsubscribe();
         };
-    }, [activeId]);
+    }, [activeId, currentUserId]);
 
     const handleSendMessage = async (content: string, imageUrl?: string) => {
         if (!activeId) return;

@@ -112,6 +112,7 @@ export async function createListing(listing: Listing): Promise<Listing> {
  * Fetch listings with filters
  */
 export async function fetchListings(filters: SearchFilters = {}): Promise<Listing[]> {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let query: any = supabase
         .from('listings')
     // Category filter - Use inner join to filter by related table
