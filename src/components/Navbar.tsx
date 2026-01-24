@@ -172,9 +172,9 @@ const Navbar = () => {
             <div className="pt-4 border-t border-border space-y-2">
               {user ? (
                 <>
-                  <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-primary/10 border border-primary/20">
-                    <UserIcon size={16} className="text-primary" />
-                    <span className="text-sm font-medium text-foreground">
+                  <div className="flex items-center gap-2 px-4 py-3 rounded-lg bg-primary/10 border border-primary/20 overflow-hidden">
+                    <UserIcon size={16} className="text-primary flex-shrink-0" />
+                    <span className="text-sm font-medium text-foreground truncate max-w-[200px]">
                       {user.user_metadata?.full_name || user.email}
                     </span>
                   </div>

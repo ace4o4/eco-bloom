@@ -58,7 +58,7 @@ const MetricCard = ({ icon, value, suffix, label, comparison, color, delay }: Me
         {icon}
       </div>
       
-      <div className="text-4xl md:text-5xl font-bold text-foreground mb-2">
+      <div className="text-3xl md:text-5xl font-bold text-foreground mb-2">
         <AnimatedCounter value={value} suffix={suffix} />
       </div>
       
@@ -116,7 +116,7 @@ const ImpactDashboard = () => {
   ];
 
   return (
-    <section id="impact" className="py-24 px-4 bg-vibrant-pattern">
+    <section id="impact" className="py-12 md:py-24 px-4 bg-vibrant-pattern">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <motion.div
@@ -124,7 +124,7 @@ const ImpactDashboard = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
-          className="text-center mb-16"
+          className="text-center mb-10 md:mb-16"
         >
           <span className="eco-badge mb-4">Community Impact</span>
           <h2 className="text-3xl md:text-5xl font-bold text-foreground mt-4 mb-4">
@@ -136,7 +136,7 @@ const ImpactDashboard = () => {
         </motion.div>
 
         {/* Metrics Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
           {metrics.map((metric, index) => (
             <MetricCard key={metric.label} {...metric} delay={index * 0.1} />
           ))}

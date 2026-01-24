@@ -65,7 +65,7 @@ const EcoMapVisualization = () => {
         {/* Map Container */}
         <div 
           ref={ref}
-          className="relative glass-card p-8 aspect-video max-w-5xl mx-auto overflow-hidden"
+          className="relative glass-card p-8 aspect-square md:aspect-video max-w-5xl mx-auto overflow-hidden"
         >
           {/* Background Grid Pattern */}
           <div 

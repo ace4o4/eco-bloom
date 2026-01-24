@@ -104,7 +104,7 @@ def get_material_info(detected_class: str, confidence: float) -> dict:
     Get material information for a detected object
     
     Args:
-        detected_class: The class name detected by YOLOv5
+        detected_class: The class name detected by Florence-2
         confidence: Detection confidence score (0-1)
     
     Returns:

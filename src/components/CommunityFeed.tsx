@@ -69,14 +69,14 @@ const levelColors = {
 
 const CommunityFeed = () => {
   return (
-    <section id="community" className="py-24 px-4 bg-muted/20">
+    <section id="community" className="py-12 md:py-24 px-4 bg-muted/20">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="text-center mb-10 md:mb-16"
         >
           <span className="eco-badge mb-4">Community Stories</span>
           <h2 className="text-3xl md:text-5xl font-bold text-foreground mt-4 mb-4">
@@ -89,7 +89,7 @@ const CommunityFeed = () => {
         </motion.div>
 
         {/* Stories Grid */}
-        <div className="grid md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+        <div className="grid md:grid-cols-2 gap-4 md:gap-6 max-w-4xl mx-auto">
           {stories.map((story, index) => (
             <motion.article
               key={story.id}
@@ -97,10 +97,10 @@ const CommunityFeed = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
-              className="glass-card p-6 hover:shadow-neon transition-all duration-300"
+              className="glass-card p-5 md:p-6 hover:shadow-neon transition-all duration-300"
             >
               {/* Header */}
-              <div className="flex items-start justify-between mb-4">
+              <div className="flex flex-wrap items-start justify-between mb-4 gap-2">
                 <div className="flex items-center gap-3">
                   {/* Avatar with Level */}
                   <div className="relative">

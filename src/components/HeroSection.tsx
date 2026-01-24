@@ -63,10 +63,10 @@ const HeroSection = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.1 }}
-          className="text-4xl md:text-6xl lg:text-7xl font-montserrat font-bold text-foreground mb-6 leading-tight"
+          className="text-3xl md:text-6xl lg:text-7xl font-montserrat font-bold text-foreground mb-6 leading-tight"
         >
           Growing Circular Economies,{" "}
-          <span className="text-gradient-eco">One Match at a Time</span>
+          <span className="text-gradient-eco block md:inline">One Match at a Time</span>
         </motion.h1>
 
         {/* Subtitle */}
@@ -74,7 +74,7 @@ const HeroSection = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.7, delay: 0.2 }}
-          className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-10 leading-relaxed"
+          className="text-base md:text-xl text-muted-foreground max-w-2xl mx-auto mb-8 md:mb-10 leading-relaxed px-4"
         >
           Transform waste streams into resource rivers. Connect your business to a
           living ecosystem that makes sustainability effortless, measurable, and joyful.

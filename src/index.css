@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -9,49 +9,49 @@
     /* Dark Solarpunk Theme - Rich & Vibrant */
     --background: 160 30% 6%;
     --foreground: 80 20% 95%;
-    
+
     /* Deep Forest Primary */
     --primary: 145 65% 42%;
     --primary-foreground: 80 20% 98%;
-    
+
     /* Vibrant Mint Secondary */
     --secondary: 160 80% 55%;
     --secondary-foreground: 160 30% 6%;
-    
+
     /* Warm Terracotta Accent */
     --accent: 25 75% 55%;
     --accent-foreground: 80 20% 98%;
-    
+
     /* Muted surfaces */
     --muted: 160 20% 12%;
     --muted-foreground: 80 15% 65%;
-    
+
     /* Cards with glassmorphism */
     --card: 160 25% 10%;
     --card-foreground: 80 20% 95%;
-    
+
     --popover: 160 25% 10%;
     --popover-foreground: 80 20% 95%;
-    
+
     /* Semantic Colors */
     --destructive: 0 72% 55%;
     --destructive-foreground: 80 20% 98%;
-    
+
     --success: 145 60% 45%;
     --success-foreground: 80 20% 98%;
-    
+
     --warning: 40 95% 55%;
     --warning-foreground: 160 30% 6%;
-    
+
     --info: 195 85% 55%;
     --info-foreground: 160 30% 6%;
-    
+
     /* UI Elements */
     --border: 160 20% 18%;
     --input: 160 20% 15%;
     --ring: 145 65% 42%;
     --radius: 1rem;
-    
+
     /* Extended Vibrant Palette */
     --sky-blue: 200 90% 60%;
     --golden-hour: 40 95% 60%;
@@ -61,12 +61,12 @@
     --electric-mint: 160 100% 50%;
     --violet-bloom: 280 70% 60%;
     --magenta-pulse: 330 80% 55%;
-    
+
     /* Glassmorphism - Darker */
     --glass-bg: 160 30% 8% / 0.8;
     --glass-border: 145 65% 42% / 0.25;
     --glass-shadow: 0 0% 0% / 0.4;
-    
+
     /* Sidebar */
     --sidebar-background: 160 30% 8%;
     --sidebar-foreground: 80 20% 95%;
@@ -78,21 +78,24 @@
     --sidebar-ring: 145 65% 42%;
   }
 
-  .dark {
-    /* Same as root for now - dark by default */
-  }
+
 }
 
 @layer base {
   * {
     @apply border-border;
   }
-  
+
   body {
-    @apply bg-background text-foreground font-inter antialiased;
+    @apply bg-background text-foreground font-inter antialiased overflow-x-hidden;
   }
-  
-  h1, h2, h3, h4, h5, h6 {
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
     @apply font-montserrat tracking-tight;
   }
 }
@@ -101,74 +104,83 @@
   /* Enhanced Glassmorphism Card */
   .glass-card {
     @apply bg-card/80 backdrop-blur-xl border border-primary/20 rounded-3xl;
-    box-shadow: 
+    box-shadow:
       0 8px 32px hsl(var(--glass-shadow)),
       inset 0 1px 0 rgba(255, 255, 255, 0.05),
       0 0 0 1px hsl(var(--glass-border));
   }
-  
+
   /* Floating Glass Panel */
   .glass-panel {
     @apply bg-card/70 backdrop-blur-2xl border border-primary/15 rounded-2xl;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
   }
-  
+
   /* Neon Glow Card */
   .neon-card {
     @apply glass-card relative overflow-hidden;
   }
-  
+
   .neon-card::before {
     @apply absolute -inset-[1px] rounded-3xl opacity-0 transition-opacity duration-500;
-    content: '';
-    background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--secondary)), hsl(var(--accent)));
+    content: "";
+    background: linear-gradient(
+      135deg,
+      hsl(var(--primary)),
+      hsl(var(--secondary)),
+      hsl(var(--accent))
+    );
     z-index: -1;
   }
-  
+
   .neon-card:hover::before {
     @apply opacity-100;
   }
-  
+
   /* Impact Metric Card */
   .metric-card {
     @apply glass-card p-6 relative overflow-hidden;
   }
-  
+
   .metric-card::before {
     @apply absolute -top-20 -right-20 w-40 h-40 rounded-full opacity-30;
-    content: '';
-    background: radial-gradient(circle, hsl(var(--secondary)) 0%, transparent 70%);
+    content: "";
+    background: radial-gradient(
+      circle,
+      hsl(var(--secondary)) 0%,
+      transparent 70%
+    );
   }
-  
+
   /* Eco Badge */
   .eco-badge {
     @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium;
     @apply bg-primary/20 text-primary border border-primary/30;
   }
-  
+
   /* Story Link with vine underline */
   .story-link {
     @apply relative inline-block;
   }
-  
+
   .story-link::after {
     @apply absolute bottom-0 left-0 w-full h-0.5 bg-gradient-to-r from-primary to-secondary origin-left scale-x-0 transition-transform duration-300;
-    content: '';
+    content: "";
   }
-  
+
   .story-link:hover::after {
     @apply scale-x-100;
   }
-  
+
   /* Input Field Styling */
   .eco-input {
     @apply bg-input border-2 border-border rounded-xl px-4 py-3 text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 transition-all duration-300;
   }
-  
+
   .eco-input:focus {
     box-shadow: 0 0 20px hsl(var(--primary) / 0.2);
   }
-  
+
   /* Select Styling */
   .eco-select {
     @apply eco-input appearance-none cursor-pointer;
@@ -177,21 +189,35 @@
     background-position: right 1rem center;
     background-size: 1.25rem;
   }
-  
+
   /* Gradient Text Variants */
   .text-gradient-eco {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 50%, hsl(var(--electric-mint)) 100%);
+    background-image: linear-gradient(
+      135deg,
+      hsl(var(--primary)) 0%,
+      hsl(var(--secondary)) 50%,
+      hsl(var(--electric-mint)) 100%
+    );
   }
-  
+
   .text-gradient-warm {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, hsl(var(--golden-hour)) 0%, hsl(var(--accent)) 50%, hsl(var(--living-coral)) 100%);
+    background-image: linear-gradient(
+      135deg,
+      hsl(var(--golden-hour)) 0%,
+      hsl(var(--accent)) 50%,
+      hsl(var(--living-coral)) 100%
+    );
   }
-  
+
   .text-gradient-cool {
     @apply bg-clip-text text-transparent;
-    background-image: linear-gradient(135deg, hsl(var(--info)) 0%, hsl(var(--violet-bloom)) 100%);
+    background-image: linear-gradient(
+      135deg,
+      hsl(var(--info)) 0%,
+      hsl(var(--violet-bloom)) 100%
+    );
   }
 }
 
@@ -200,61 +226,86 @@
   .animate-breathe {
     animation: breathe 4s ease-in-out infinite;
   }
-  
+
   /* Gentle Float */
   .animate-float {
     animation: float 6s ease-in-out infinite;
   }
-  
+
   /* Vine Growth */
   .animate-grow {
     animation: grow 1.5s ease-out forwards;
   }
-  
+
   /* Leaf Spin */
   .animate-leaf-spin {
     animation: leaf-spin 3s linear infinite;
   }
-  
+
   /* Pulse Glow */
   .animate-pulse-glow {
     animation: pulse-glow 2s ease-in-out infinite;
   }
-  
+
   /* Neon Pulse */
   .animate-neon-pulse {
     animation: neon-pulse 3s ease-in-out infinite;
   }
-  
+
   /* Soft Glow */
   .glow-eco {
     box-shadow: 0 0 40px -10px hsl(var(--secondary) / 0.6);
   }
-  
+
   .glow-accent {
     box-shadow: 0 0 40px -10px hsl(var(--accent) / 0.6);
   }
-  
+
   /* Nature Pattern Background */
   .bg-nature-pattern {
-    background-image: 
-      radial-gradient(circle at 20% 80%, hsl(var(--secondary) / 0.15) 0%, transparent 50%),
-      radial-gradient(circle at 80% 20%, hsl(var(--info) / 0.1) 0%, transparent 50%),
-      radial-gradient(circle at 40% 40%, hsl(var(--accent) / 0.1) 0%, transparent 40%);
+    background-image:
+      radial-gradient(
+        circle at 20% 80%,
+        hsl(var(--secondary) / 0.15) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        circle at 80% 20%,
+        hsl(var(--info) / 0.1) 0%,
+        transparent 50%
+      ),
+      radial-gradient(
+        circle at 40% 40%,
+        hsl(var(--accent) / 0.1) 0%,
+        transparent 40%
+      );
   }
-  
+
   /* Vibrant Pattern */
   .bg-vibrant-pattern {
-    background-image: 
-      radial-gradient(circle at 10% 90%, hsl(var(--violet-bloom) / 0.15) 0%, transparent 40%),
-      radial-gradient(circle at 90% 10%, hsl(var(--electric-mint) / 0.15) 0%, transparent 40%),
-      radial-gradient(circle at 50% 50%, hsl(var(--primary) / 0.1) 0%, transparent 60%);
+    background-image:
+      radial-gradient(
+        circle at 10% 90%,
+        hsl(var(--violet-bloom) / 0.15) 0%,
+        transparent 40%
+      ),
+      radial-gradient(
+        circle at 90% 10%,
+        hsl(var(--electric-mint) / 0.15) 0%,
+        transparent 40%
+      ),
+      radial-gradient(
+        circle at 50% 50%,
+        hsl(var(--primary) / 0.1) 0%,
+        transparent 60%
+      );
   }
 }
 
 /* Keyframes */
 @keyframes breathe {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     opacity: 1;
   }
@@ -265,7 +316,8 @@
 }
 
 @keyframes float {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {
@@ -294,7 +346,8 @@
 }
 
 @keyframes pulse-glow {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 20px -5px hsl(var(--secondary) / 0.5);
   }
   50% {
@@ -303,14 +356,15 @@
 }
 
 @keyframes neon-pulse {
-  0%, 100% {
-    box-shadow: 
+  0%,
+  100% {
+    box-shadow:
       0 0 5px hsl(var(--primary) / 0.5),
       0 0 20px hsl(var(--primary) / 0.3),
       0 0 40px hsl(var(--primary) / 0.1);
   }
   50% {
-    box-shadow: 
+    box-shadow:
       0 0 10px hsl(var(--primary) / 0.8),
       0 0 30px hsl(var(--primary) / 0.5),
       0 0 60px hsl(var(--primary) / 0.2);

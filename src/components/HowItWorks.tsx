@@ -30,14 +30,14 @@ const steps = [
 
 const HowItWorks = () => {
   return (
-    <section className="py-24 px-4">
+    <section className="py-12 md:py-24 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-16"
+          className="text-center mb-10 md:mb-16"
         >
           <span className="eco-badge mb-4">Simple & Sustainable</span>
           <h2 className="text-3xl md:text-5xl font-bold text-foreground mt-4 mb-4">
@@ -54,7 +54,7 @@ const HowItWorks = () => {
           {/* Connection Line */}
           <div className="hidden lg:block absolute top-1/2 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-primary/30 to-transparent -translate-y-1/2" />
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
             {steps.map((step, index) => (
               <motion.div
                 key={step.title}
@@ -72,7 +72,7 @@ const HowItWorks = () => {
                   {index + 1}
                 </motion.div>
 
-                <div className="glass-card p-6 h-full hover:shadow-neon transition-all duration-300 group">
+                <div className="glass-card p-5 md:p-6 h-full hover:shadow-neon transition-all duration-300 group">
                   {/* Icon */}
                   <div className={`w-14 h-14 rounded-2xl bg-gradient-to-br ${step.color} text-white flex items-center justify-center mb-5 group-hover:scale-110 transition-transform shadow-lg`}>
                     {step.icon}
