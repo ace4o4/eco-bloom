@@ -3,7 +3,7 @@
  * Connects to YOLOv5 Backend API for object detection
  */
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_URL = 'https://ace4o4-eco-bloom.hf.space';
 
 export interface MaterialDetectionResult {
     materialType: string;
