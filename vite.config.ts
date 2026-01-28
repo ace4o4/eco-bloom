@@ -5,7 +5,7 @@ import { componentTagger } from "lovable-tagger";
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => ({
-  base: "/eco-bloom/",
+  base: process.env.BUILD_TARGET === 'mobile' ? '/' : '/eco-bloom/',
   server: {
     host: "::",
     port: 8080,
