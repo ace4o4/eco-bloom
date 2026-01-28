@@ -2,8 +2,17 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import {
-  Leaf, ArrowRight, ArrowLeft, MapPin, Calendar,
-  Scale, Check, Sparkles, Search, Sprout, HandHeart
+  Leaf,
+  ArrowRight,
+  ArrowLeft,
+  MapPin,
+  Calendar,
+  Scale,
+  Check,
+  Sparkles,
+  Search,
+  Sprout,
+  HandHeart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
@@ -26,30 +35,38 @@ import { getCurrentLocation, calculateDistance } from "@/lib/geolocation";
 const listingSchema = z.object({
   type: z.enum(["offering", "seeking"]),
   imageData: z.string().min(1, "Please capture or upload an image"),
-  title: z.string().min(3, "Title must be at least 3 characters").max(100, "Title must be less than 100 characters"),
-  description: z.string().min(10, "Description must be at least 10 characters").max(500, "Description must be less than 500 characters"),
+  title: z
+    .string()
+    .min(3, "Title must be at least 3 characters")
+    .max(100, "Title must be less than 100 characters"),
+  description: z
+    .string()
+    .min(10, "Description must be at least 10 characters")
+    .max(500, "Description must be less than 500 characters"),
   quantity: z.string().min(1, "Please enter quantity"),
   unit: z.string().min(1, "Please select a unit"),
-  location: z.string().min(3, "Location must be at least 3 characters").max(100),
+  location: z
+    .string()
+    .min(3, "Location must be at least 3 characters")
+    .max(100),
   frequency: z.string().min(1, "Please select frequency"),
 });
-
 
 // Map form categories to database slugs
 const getCategorySlug = (category: string): string => {
   const categoryMap: Record<string, string> = {
-    'organic': 'organic',
-    'textiles': 'textiles',
-    'plastic': 'plastics',
-    'plastics': 'plastics',
-    'metal': 'metals',
-    'metals': 'metals',
-    'paper': 'paper',
-    'electronics': 'plastics', // fallback
-    'glass': 'plastics', // fallback
-    'other': 'organic', // fallback to first category
+    organic: "organic",
+    textiles: "textiles",
+    plastic: "plastics",
+    plastics: "plastics",
+    metal: "metals",
+    metals: "metals",
+    paper: "paper",
+    electronics: "plastics", // fallback
+    glass: "plastics", // fallback
+    other: "organic", // fallback to first category
   };
-  return categoryMap[category?.toLowerCase()] || 'organic';
+  return categoryMap[category?.toLowerCase()] || "organic";
 };
 
 interface MarketPriceData {
@@ -82,25 +99,32 @@ const PlantMatch = () => {
   // Seeking flow state
   const [listings, setListings] = useState<UIListing[]>([]);
   const [isLoadingListings, setIsLoadingListings] = useState(false);
-  const [selectedListing, setSelectedListing] = useState<UIListing | null>(null);
+  const [selectedListing, setSelectedListing] = useState<UIListing | null>(
+    null,
+  );
   const [showContactDialog, setShowContactDialog] = useState(false);
 
   const validateStep = () => {
     const newErrors: Record<string, string> = {};
 
     if (step === 1 && !formData.type) {
-      newErrors.type = "Please select whether you're offering or seeking materials";
+      newErrors.type =
+        "Please select whether you're offering or seeking materials";
     }
     if (step === 2 && !formData.imageData) {
-      newErrors.imageData = "Please capture or upload an image of your material";
+      newErrors.imageData =
+        "Please capture or upload an image of your material";
     }
     if (step === 3) {
-      if (formData.title.length < 3) newErrors.title = "Title must be at least 3 characters";
-      if (formData.description.length < 10) newErrors.description = "Description must be at least 10 characters";
+      if (formData.title.length < 3)
+        newErrors.title = "Title must be at least 3 characters";
+      if (formData.description.length < 10)
+        newErrors.description = "Description must be at least 10 characters";
       if (!formData.quantity) newErrors.quantity = "Please enter quantity";
     }
     if (step === 4) {
-      if (formData.location.length < 3) newErrors.location = "Please enter a valid location";
+      if (formData.location.length < 3)
+        newErrors.location = "Please enter a valid location";
     }
 
     setErrors(newErrors);
@@ -109,11 +133,11 @@ const PlantMatch = () => {
 
   const nextStep = () => {
     if (validateStep()) {
-      setStep(s => Math.min(s + 1, 5));
+      setStep((s) => Math.min(s + 1, 5));
     }
   };
 
-  const prevStep = () => setStep(s => Math.max(s - 1, 1));
+  const prevStep = () => setStep((s) => Math.max(s - 1, 1));
 
   const handleSubmit = async () => {
     if (!validateStep()) return;
@@ -122,11 +146,11 @@ const PlantMatch = () => {
 
     try {
       // Upload image to Supabase Storage
-      let imageUrl = '';
+      let imageUrl = "";
       if (formData.imageData) {
-        console.log('📤 Uploading image...');
+        console.log("📤 Uploading image...");
         imageUrl = await uploadListingImageFromBase64(formData.imageData);
-        console.log('✅ Image uploaded:', imageUrl);
+        console.log("✅ Image uploaded:", imageUrl);
       }
 
       // Get location
@@ -138,9 +162,9 @@ const PlantMatch = () => {
           location_lng: location.coords.lng,
           location_address: location.address,
         };
-        console.log('📍 Location:', location.address);
+        console.log("📍 Location:", location.address);
       } catch (error) {
-        console.log('⚠️ Location not available:', error);
+        console.log("⚠️ Location not available:", error);
         // Fallback to manual location
         locationData = {
           location_address: formData.location,
@@ -149,7 +173,7 @@ const PlantMatch = () => {
 
       // Create listing
       const listingData: DBListing = {
-        type: formData.type as 'offering',
+        type: formData.type as "offering",
         title: formData.title,
         description: formData.description,
         category: getCategorySlug(formData.category), // Map to slug
@@ -161,19 +185,19 @@ const PlantMatch = () => {
         ...locationData,
       };
 
-      console.log('💾 Creating listing...');
+      console.log("💾 Creating listing...");
       await createListing(listingData);
-      console.log('✅ Listing created successfully!');
+      console.log("✅ Listing created successfully!");
 
       setIsSubmitting(false);
       setStep(5);
     } catch (error) {
-      console.error('❌ Error creating listing:', error);
+      console.error("❌ Error creating listing:", error);
       setIsSubmitting(false);
       alert(
         error instanceof Error
           ? `Failed to create listing: ${error.message}`
-          : 'Failed to create listing. Please try again.'
+          : "Failed to create listing. Please try again.",
       );
     }
   };
@@ -182,13 +206,13 @@ const PlantMatch = () => {
     setIsLoadingListings(true);
 
     try {
-      console.log('🔍 Searching listings with filters:', filters);
+      console.log("🔍 Searching listings with filters:", filters);
 
       // Prepare API filters
       const apiFilters: DBSearchFilters = {
-          query: filters.query,
-          category: filters.category,
-          radius: filters.radius,
+        query: filters.query,
+        category: filters.category,
+        radius: filters.radius,
       };
 
       // Get user location if logic requires (e.g. if location string is present or just use current)
@@ -198,7 +222,9 @@ const PlantMatch = () => {
           const location = await getCurrentLocation();
           apiFilters.location = location.coords;
         } catch (error) {
-          console.log('⚠️ Location not available, searching without distance filter');
+          console.log(
+            "⚠️ Location not available, searching without distance filter",
+          );
           apiFilters.location = undefined;
           apiFilters.radius = undefined;
         }
@@ -210,29 +236,29 @@ const PlantMatch = () => {
       const userLocation = apiFilters.location;
 
       // Calculate distances if we have user location
-      const listingsWithDistance: UIListing[] = data.map(listing => {
+      const listingsWithDistance: UIListing[] = data.map((listing) => {
         let distance;
         if (userLocation && listing.location_lat && listing.location_lng) {
-          distance = calculateDistance(
-            userLocation,
-            { lat: listing.location_lat, lng: listing.location_lng }
-          );
+          distance = calculateDistance(userLocation, {
+            lat: listing.location_lat,
+            lng: listing.location_lng,
+          });
         }
 
         return {
           id: listing.id!,
-          type: listing.type || 'offering', // Include type
+          type: listing.type || "offering", // Include type
           title: listing.title,
-          description: listing.description || '',
+          description: listing.description || "",
           category: listing.category,
-          quantity: listing.quantity || '0',
-          unit: listing.unit || 'units',
+          quantity: listing.quantity || "0",
+          unit: listing.unit || "units",
 
           price: listing.price, // Include price
-          imageData: listing.image_url || '',
+          imageData: listing.image_url || "",
           user_id: listing.user_id, // Pass user_id for chat
           location: {
-            address: listing.location_address || 'Location not specified',
+            address: listing.location_address || "Location not specified",
             distance,
           },
           user: {
@@ -249,12 +275,12 @@ const PlantMatch = () => {
       setIsLoadingListings(false);
       setStep(3); // Move to browse listings
     } catch (error) {
-      console.error('❌ Error fetching listings:', error);
+      console.error("❌ Error fetching listings:", error);
       setIsLoadingListings(false);
       alert(
         error instanceof Error
           ? `Failed to fetch listings: ${error.message}`
-          : 'Failed to fetch listings. Please try again.'
+          : "Failed to fetch listings. Please try again.",
       );
     }
   };
@@ -268,8 +294,6 @@ const PlantMatch = () => {
     setShowContactDialog(false);
     setSelectedListing(null);
   };
-
-
 
   return (
     <div className="min-h-screen bg-background bg-vibrant-pattern">
@@ -308,8 +332,11 @@ const PlantMatch = () => {
                 return (
                   <div
                     key={label}
-                    className={`text-xs font-medium ${index + 1 <= step ? "text-primary" : "text-muted-foreground"
-                      }`}
+                    className={`text-xs font-medium ${
+                      index + 1 <= step
+                        ? "text-primary"
+                        : "text-muted-foreground"
+                    }`}
                   >
                     {label}
                   </div>
@@ -342,26 +369,45 @@ const PlantMatch = () => {
                 </h2>
                 <div className="grid grid-cols-2 gap-4">
                   {[
-                    { value: "offering", label: "I'm Offering", IconComponent: Sprout, desc: "I have materials to share" },
-                    { value: "seeking", label: "I'm Seeking", IconComponent: Search, desc: "I need materials" },
+                    {
+                      value: "offering",
+                      label: "I'm Offering",
+                      IconComponent: Sprout,
+                      desc: "I have materials to share",
+                    },
+                    {
+                      value: "seeking",
+                      label: "I'm Seeking",
+                      IconComponent: Search,
+                      desc: "I need materials",
+                    },
                   ].map((option) => (
                     <button
                       key={option.value}
                       onClick={() => {
-                        setFormData({ ...formData, type: option.value as "offering" | "seeking" });
+                        setFormData({
+                          ...formData,
+                          type: option.value as "offering" | "seeking",
+                        });
                         setStep(2);
                       }}
-                      className={`p-6 rounded-2xl border-2 transition-all duration-300 text-left group hover:scale-[1.02] ${formData.type === option.value
-                        ? "border-primary bg-primary/10 shadow-neon"
-                        : "border-border bg-card/50 hover:border-primary/50"
-                        }`}
+                      className={`p-6 rounded-2xl border-2 transition-all duration-300 text-left group hover:scale-[1.02] ${
+                        formData.type === option.value
+                          ? "border-primary bg-primary/10 shadow-neon"
+                          : "border-border bg-card/50 hover:border-primary/50"
+                      }`}
                     >
                       <div className="flex flex-col items-center space-y-4">
                         <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center group-hover:scale-110 transition-transform">
-                          <option.IconComponent className="w-10 h-10 text-white" strokeWidth={2} />
+                          <option.IconComponent
+                            className="w-10 h-10 text-white"
+                            strokeWidth={2}
+                          />
                         </div>
                         <div className="text-center">
-                          <h3 className="text-xl font-semibold mb-2">{option.label}</h3>
+                          <h3 className="text-xl font-semibold mb-2">
+                            {option.label}
+                          </h3>
                           <p className="text-sm text-muted-foreground">
                             {option.desc}
                           </p>
@@ -370,7 +416,11 @@ const PlantMatch = () => {
                     </button>
                   ))}
                 </div>
-                {errors.type && <p className="text-destructive text-sm text-center">{errors.type}</p>}
+                {errors.type && (
+                  <p className="text-destructive text-sm text-center">
+                    {errors.type}
+                  </p>
+                )}
               </div>
             )}
 
@@ -384,14 +434,20 @@ const PlantMatch = () => {
 
                   // Auto-fill from AI if available
                   if (aiResult) {
-                    console.log("🤖 Auto-filling form with Florence-2 results:", aiResult);
-                    setFormData(prev => ({
+                    console.log(
+                      "🤖 Auto-filling form with Florence-2 results:",
+                      aiResult,
+                    );
+                    setFormData((prev) => ({
                       ...prev,
                       imageData,
-                      title: aiResult.primary_detection?.title || aiResult.title,
-                      description: aiResult.primary_detection?.description || aiResult.description,
+                      title:
+                        aiResult.primary_detection?.title || aiResult.title,
+                      description:
+                        aiResult.primary_detection?.description ||
+                        aiResult.description,
                     }));
-                    
+
                     if (aiResult.primary_detection?.market_price) {
                       setMarketPrice(aiResult.primary_detection.market_price);
                     }
@@ -435,54 +491,85 @@ const PlantMatch = () => {
             {step === 3 && formData.type === "offering" && (
               <div className="space-y-6">
                 <h2 className="text-xl font-semibold text-center mb-6">
-                  Tell us about your {formData.type === "offering" ? "materials" : "needs"}
+                  Tell us about your{" "}
+                  {formData.type === "offering" ? "materials" : "needs"}
                 </h2>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Title</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Title
+                  </label>
                   <input
                     type="text"
                     value={formData.title}
-                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, title: e.target.value })
+                    }
                     placeholder="e.g., Fresh coffee grounds, Plastic bottles, Cardboard boxes"
                     className="eco-input w-full"
                     maxLength={100}
                   />
-                  {errors.title && <p className="text-destructive text-sm mt-1">{errors.title}</p>}
+                  {errors.title && (
+                    <p className="text-destructive text-sm mt-1">
+                      {errors.title}
+                    </p>
+                  )}
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Description</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Description
+                  </label>
                   <textarea
                     value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, description: e.target.value })
+                    }
                     placeholder="Describe the quality, source, and any special handling requirements..."
                     className="eco-input w-full h-28 resize-none"
                     maxLength={500}
                   />
                   <div className="flex justify-between mt-1">
-                    {errors.description && <p className="text-destructive text-sm">{errors.description}</p>}
-                    <span className="text-xs text-muted-foreground ml-auto">{formData.description.length}/500</span>
+                    {errors.description && (
+                      <p className="text-destructive text-sm">
+                        {errors.description}
+                      </p>
+                    )}
+                    <span className="text-xs text-muted-foreground ml-auto">
+                      {formData.description.length}/500
+                    </span>
                   </div>
                 </div>
                 {/* Material Details */}
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Quantity</label>
+                    <label className="block text-sm font-medium mb-2">
+                      Quantity
+                    </label>
                     <input
                       type="number"
                       value={formData.quantity}
-                      onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, quantity: e.target.value })
+                      }
                       placeholder="e.g., 100"
                       className="eco-input w-full"
                     />
-                    {errors.quantity && <p className="text-destructive text-xs mt-1">{errors.quantity}</p>}
+                    {errors.quantity && (
+                      <p className="text-destructive text-xs mt-1">
+                        {errors.quantity}
+                      </p>
+                    )}
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-2">Unit</label>
+                    <label className="block text-sm font-medium mb-2">
+                      Unit
+                    </label>
                     <select
                       value={formData.unit}
-                      onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, unit: e.target.value })
+                      }
                       className="eco-select w-full"
                     >
                       <option value="kg">Kilograms (kg)</option>
@@ -494,39 +581,49 @@ const PlantMatch = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Frequency</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Frequency
+                  </label>
                   <select
                     value={formData.frequency}
-                    onChange={(e) => setFormData({ ...formData, frequency: e.target.value })}
+                    onChange={(e) =>
+                      setFormData({ ...formData, frequency: e.target.value })
+                    }
                     className="eco-select w-full"
                   >
-                    <option value="electronics">Electronics</option>
-                    <option value="textiles">Textiles</option>
-                    <option value="organic">Organic</option>
-                    <option value="rubber">Rubber</option>
-                    <option value="wood">Wood</option>
-                    <option value="other">Other</option>
+                    <option value="one-time">One-time</option>
+                    <option value="weekly">Weekly</option>
+                    <option value="monthly">Monthly</option>
+                    <option value="custom">Custom</option>
                   </select>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium mb-2">Price (Optional)</label>
+                  <label className="block text-sm font-medium mb-2">
+                    Price (Optional)
+                  </label>
                   <div className="relative">
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                      $
+                    </span>
                     <input
                       type="number"
                       value={formData.price}
-                      onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, price: e.target.value })
+                      }
                       placeholder="0.00"
                       className="eco-input w-full pl-8"
                       min="0"
                       step="0.01"
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground mt-1">Leave empty if offering for free</p>
-                  
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Leave empty if offering for free
+                  </p>
+
                   {marketPrice && (
-                    <motion.div 
+                    <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
                       className="mt-4 p-3 bg-secondary/10 border border-secondary/20 rounded-xl"
@@ -538,14 +635,21 @@ const PlantMatch = () => {
                       <div className="space-y-1 text-sm text-muted-foreground">
                         <div className="flex justify-between">
                           <span>Market Rate:</span>
-                          <span className="font-medium text-foreground">₹{marketPrice.min} - ₹{marketPrice.max} / {marketPrice.unit}</span>
+                          <span className="font-medium text-foreground">
+                            ₹{marketPrice.min} - ₹{marketPrice.max} /{" "}
+                            {marketPrice.unit}
+                          </span>
                         </div>
                         <div className="flex justify-between">
                           <span>Recommended Bargain (60%):</span>
-                          <span className="font-medium text-primary">Min ₹{marketPrice.recommended_min.toFixed(2)} / {marketPrice.unit}</span>
+                          <span className="font-medium text-primary">
+                            Min ₹{marketPrice.recommended_min.toFixed(2)} /{" "}
+                            {marketPrice.unit}
+                          </span>
                         </div>
                         <p className="text-xs italic mt-2 opacity-80">
-                          *Fair pricing helps ensure quick pickups. We recommend listing at approx. 60% of market value.
+                          *Fair pricing helps ensure quick pickups. We recommend
+                          listing at approx. 60% of market value.
                         </p>
                       </div>
                     </motion.div>
@@ -570,7 +674,9 @@ const PlantMatch = () => {
                     <input
                       type="text"
                       value={formData.location}
-                      onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                      onChange={(e) =>
+                        setFormData({ ...formData, location: e.target.value })
+                      }
                       placeholder="City, neighborhood, or full address"
                       className="eco-input w-full pr-10"
                       maxLength={100}
@@ -578,13 +684,18 @@ const PlantMatch = () => {
                     <button
                       onClick={async () => {
                         try {
-                            const location = await getCurrentLocation();
-                            if (location.address) {
-                                setFormData({ ...formData, location: location.address });
-                            }
+                          const location = await getCurrentLocation();
+                          if (location.address) {
+                            setFormData({
+                              ...formData,
+                              location: location.address,
+                            });
+                          }
                         } catch (error) {
-                            console.error("Failed to get location", error);
-                            alert("Could not detect location. Please enter manually.");
+                          console.error("Failed to get location", error);
+                          alert(
+                            "Could not detect location. Please enter manually.",
+                          );
                         }
                       }}
                       className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-lg hover:bg-muted text-primary transition-colors"
@@ -593,15 +704,24 @@ const PlantMatch = () => {
                       <MapPin className="w-4 h-4" />
                     </button>
                   </div>
-                  {errors.location && <p className="text-destructive text-sm mt-1">{errors.location}</p>}
+                  {errors.location && (
+                    <p className="text-destructive text-sm mt-1">
+                      {errors.location}
+                    </p>
+                  )}
                   <p className="text-xs text-muted-foreground mt-2">
-                    <span className="inline-flex items-center gap-1">We prioritize local matches to minimize carbon footprint <Leaf className="w-3.5 h-3.5 inline" /></span>
+                    <span className="inline-flex items-center gap-1">
+                      We prioritize local matches to minimize carbon footprint{" "}
+                      <Leaf className="w-3.5 h-3.5 inline" />
+                    </span>
                   </p>
                 </div>
 
                 {/* Summary Preview */}
                 <div className="mt-8 p-4 bg-muted/30 rounded-2xl border border-border">
-                  <h3 className="font-medium mb-3 text-sm text-muted-foreground">Listing Preview</h3>
+                  <h3 className="font-medium mb-3 text-sm text-muted-foreground">
+                    Listing Preview
+                  </h3>
                   <div className="space-y-3">
                     {formData.imageData && (
                       <img
@@ -611,15 +731,22 @@ const PlantMatch = () => {
                       />
                     )}
                     <div className="flex items-center gap-2">
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${formData.type === "offering"
-                        ? "bg-primary/20 text-primary"
-                        : "bg-info/20 text-info"
-                        }`}>
+                      <span
+                        className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          formData.type === "offering"
+                            ? "bg-primary/20 text-primary"
+                            : "bg-info/20 text-info"
+                        }`}
+                      >
                         {formData.type === "offering" ? "Offering" : "Seeking"}
                       </span>
                     </div>
-                    <h4 className="font-semibold text-foreground">{formData.title || "Untitled"}</h4>
-                    <p className="text-sm text-muted-foreground line-clamp-2">{formData.description}</p>
+                    <h4 className="font-semibold text-foreground">
+                      {formData.title || "Untitled"}
+                    </h4>
+                    <p className="text-sm text-muted-foreground line-clamp-2">
+                      {formData.description}
+                    </p>
                     <div className="flex items-center gap-4 text-sm text-muted-foreground">
                       <span className="flex items-center gap-1">
                         <Scale className="w-4 h-4" />
@@ -632,7 +759,7 @@ const PlantMatch = () => {
                     </div>
                     {formData.price && (
                       <div className="mt-2 text-sm font-semibold text-primary">
-                         ${parseFloat(formData.price).toFixed(2)}
+                        ${parseFloat(formData.price).toFixed(2)}
                       </div>
                     )}
                   </div>
@@ -652,16 +779,36 @@ const PlantMatch = () => {
                   <Check className="w-10 h-10 text-white" />
                 </motion.div>
                 <h2 className="text-2xl font-bold mb-2">
-                  <span className="text-gradient-eco inline-flex items-center gap-2">Match Planted! <Sprout className="w-5 h-5" /></span>
+                  <span className="text-gradient-eco inline-flex items-center gap-2">
+                    Match Planted! <Sprout className="w-5 h-5" />
+                  </span>
                 </h2>
                 <p className="text-muted-foreground mb-8">
-                  Your listing is now live. We'll notify you when we find a match.
+                  Your listing is now live. We'll notify you when we find a
+                  match.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-3 justify-center">
                   <Button variant="eco" onClick={() => navigate("/scorecard")}>
                     View Your Impact
                   </Button>
-                  <Button variant="outline" onClick={() => { setStep(1); setFormData({ type: "", imageData: "", title: "", description: "", category: "", quantity: "", price: "", unit: "units", location: "", frequency: "one-time" }); }}>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setStep(1);
+                      setFormData({
+                        type: "",
+                        imageData: "",
+                        title: "",
+                        description: "",
+                        category: "",
+                        quantity: "",
+                        price: "",
+                        unit: "units",
+                        location: "",
+                        frequency: "one-time",
+                      });
+                    }}
+                  >
                     Plant Another Match
                   </Button>
                 </div>
