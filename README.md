@@ -1,4 +1,4 @@
-  # 🌿 Eco-Bloom
+# 🌿 Eco-Bloom
 
 **A Circular Economy Platform for Material Reuse and Recycling**
 
