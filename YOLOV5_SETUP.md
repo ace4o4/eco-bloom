@@ -5,7 +5,7 @@
 1. **Open NEW terminal** (keep React running in the other one)
 
 2. **Navigate to backend:**
-```bashinh
+```bashin
 cd backend
 ```
 
