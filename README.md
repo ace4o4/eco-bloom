@@ -1,4 +1,4 @@
-# 🌿 Eco-Bloom  #
+# 🌿 Eco-Bloo
 **A Circular Economy Platform for Material Reuse and Recycling**
 
 [![Build Status](https://github.com/ace4o4/eco-bloom/actions/workflows/build.yml/badge.svg)](https://github.com/ace4o4/eco-bloom/actions)
