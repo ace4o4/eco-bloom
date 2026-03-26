@@ -68,6 +68,7 @@ const ContactDialog = ({ listing, isOpen, onClose }: ContactDialogProps) => {
         if (isOpen && listing?.id) {
             loadBids();
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isOpen, listing]);
 
     // Pre-fill bid amount if user has already bid
