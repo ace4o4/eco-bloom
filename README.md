@@ -59,6 +59,45 @@ Visit `http://localhost:8080` to see the app!
 
 ---
 
+## 📱 Android Build (Capacitor)
+
+Eco-Bloom supports building a native Android application using [Capacitor](https://capacitorjs.com/).
+
+### Prerequisites
+
+- Node.js 18+, npm
+- Android Studio (with Android SDK installed)
+- JDK 17+
+
+### Build the Android APK
+
+```bash
+# 1. Install dependencies (if not done already)
+npm install
+
+# 2. Build web assets for mobile and sync with Android project
+npm run cap:build:android
+
+# 3. Open in Android Studio to run on device / emulator
+npm run cap:open:android
+```
+
+> **CI/CD**: Every push to `main` automatically builds a debug APK via the
+> [Android workflow](.github/workflows/android.yml) and uploads it as a
+> downloadable artifact.
+
+### Capacitor Scripts
+
+| Script | Description |
+|--------|-------------|
+| `npm run build:mobile` | Build web assets with mobile base path (`/`) |
+| `npm run cap:sync` | Sync web assets + plugins into the Android project |
+| `npm run cap:copy:android` | Copy web assets into the Android project (no plugin update) |
+| `npm run cap:build:android` | Full mobile build + sync in one step |
+| `npm run cap:open:android` | Open the Android project in Android Studio |
+
+---
+
 ## 📦 What's Inside
 
 ```
@@ -189,7 +228,7 @@ If you find this project useful, please consider giving it a star ⭐
 
 - [x] v1.0 - Core features
 - [ ] v1.1 - Push notifications & messaging
-- [ ] v1.2 - Mobile app
+- [x] v1.2 - Mobile app (Android via Capacitor)
 - [ ] v2.0 - Community features
 
 See [CHANGELOG.md](./CHANGELOG.md) for detailed version history.
