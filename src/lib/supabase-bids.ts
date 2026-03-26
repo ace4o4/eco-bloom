@@ -15,6 +15,8 @@ export interface Bid {
     };
 }
 
+type RawBid = Omit<Bid, 'bidder'>;
+
 export async function acceptBid(bidId: string, listingId: string) {
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -97,7 +99,7 @@ export async function getBidsForListing(listingId: string): Promise<Bid[]> {
     const profileMap = new Map(profiles?.map(p => [p.id, p]) || []);
 
     // Step 4: Merge data
-    return bids.map((bid: any) => ({
+    return (bids as RawBid[]).map((bid) => ({
         ...bid,
         bidder: {
             full_name: profileMap.get(bid.bidder_id)?.full_name || 'Anonymous User',
