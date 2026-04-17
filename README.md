@@ -11,7 +11,6 @@
 
 
 
-
 ## 📖 About 
 
 Eco-Bloom is a production-ready web platform that connects people to share, reuse, and recycle   materials. Using AI-powered material detection and location-based matching, we make it easy to give your waste a second life.
