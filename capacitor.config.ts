@@ -5,5 +5,4 @@ const config: CapacitorConfig = {
   appName: 'EcoBloom',
   webDir: 'dist'
 };
-
 export default config;
