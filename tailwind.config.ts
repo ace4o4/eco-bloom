@@ -14,7 +14,6 @@ export default {
       },
     },
 
-
     extend: {
       fontFamily: {
         inter: ['Inter', 'sans-serif'],
