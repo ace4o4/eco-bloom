@@ -18,7 +18,6 @@
     "cap:copy:android": "npx cap copy android"
   },
 
-
   
   "dependencies": {
     "@capacitor/android": "^7.0.0",
