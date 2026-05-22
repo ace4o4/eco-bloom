@@ -6,3 +6,4 @@ const config: CapacitorConfig = {
   webDir: 'dist'
 };
 export default config;
+
