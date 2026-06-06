@@ -11,7 +11,6 @@ Eco-Bloom is a production-ready web platform that connects people to share, reus
 
 
 
-
 ### ✨ Key Features  
 
 - 🤖 **AI Material Detection** - Automatically classify materials using YOLOv5.
