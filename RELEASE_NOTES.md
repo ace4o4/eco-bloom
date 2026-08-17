@@ -8,7 +8,6 @@
 
 
 
-
 ## 📋 Overview
 
 Eco-Bloom v1.0.0 marks the first production-ready release of our circular economy platform. This release includes a fully integrated database system, AI-powered material detection, real-time listing management, and comprehensive user features.
