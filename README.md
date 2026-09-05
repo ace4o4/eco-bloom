@@ -6,6 +6,12 @@
 [![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/ace4o4/eco-bloom/releases)
 ---
 
+
+
+
+
+
+
 ## 📖 Abouts
 
 Eco-Bloom is a production-ready web platform that connects people to share, reuse, and recycle   materials. Using AI-powered material detection and location-based matching, we make it easy to give your waste a second life.
