@@ -9,7 +9,7 @@ export default config;
 
 
 
-qwertyuiop
+qwertyu
 
 
 
