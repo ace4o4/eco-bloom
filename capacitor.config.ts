@@ -8,9 +8,4 @@ const config: CapacitorConfig = {
 export default config;
 
 
-qwert
-
-
-
-
-
+qwer
